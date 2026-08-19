@@ -1,0 +1,452 @@
+{% extends 'base.html' %}
+
+{% block title %}NPE / PEB Extraction - ZINLOG Smart Logistics{% endblock %}
+
+{% block breadcrumb %}Export &gt; NPE / PEB Extraction{% endblock %}
+{% block page_title %}NPE / PEB Extraction{% endblock %}
+{% block page_subtitle %}Upload and manage customs clearance documents.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       SCORPLOG MODULAR UI: ULTRA-FAST MODERN LOADING & SKELETON ANIMATIONS
+       ========================================================================== */
+    .npe-loading-card {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(12, 25, 46, 0.08);
+        padding: 3rem 2.5rem;
+        text-align: center;
+        max-width: 680px;
+        margin: 1.5rem auto;
+        animation: fadeInFast 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes fadeInFast {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Dual-Ring Glowing Spinner */
+    .spinner-ring-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem auto;
+    }
+
+    .spinner-outer-ring {
+        width: 80px;
+        height: 80px;
+        border: 4px solid #ffedd5;
+        border-top: 4px solid #f97316;
+        border-right: 4px solid #ea580c;
+        border-radius: 50%;
+        animation: spinRing 0.8s linear infinite;
+        box-shadow: 0 0 18px rgba(249, 115, 22, 0.3);
+    }
+
+    .spinner-inner-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        color: #0c192e;
+        animation: pulseIcon 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes spinRing {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes pulseIcon {
+        0% {
+            transform: translate(-50%, -50%) scale(0.9);
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: translate(-50%, -50%) scale(1.1);
+            opacity: 1;
+        }
+    }
+
+    /* Progress Bar */
+    .npe-progress-container {
+        width: 100%;
+        background: #f1f5f9;
+        border-radius: 12px;
+        height: 12px;
+        overflow: hidden;
+        margin: 1.25rem 0 0.75rem 0;
+        position: relative;
+    }
+
+    .npe-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #f97316 0%, #ea580c 50%, #10b981 100%);
+        border-radius: 12px;
+        transition: width 0.15s linear;
+        box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+    }
+
+    .npe-status-text {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0c192e;
+        margin-bottom: 0.35rem;
+    }
+
+    .npe-subtext {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Skeleton Loading Rows Simulation */
+    .skeleton-container {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: left;
+    }
+
+    .skeleton-row {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 0.85rem 1.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #e2e8f0;
+    }
+
+    .skeleton-box {
+        background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+        background-size: 200% 100%;
+        animation: skeletonShimmer 1.2s infinite;
+        border-radius: 6px;
+    }
+
+    @keyframes skeletonShimmer {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- PROCESSED RESULT / DOWNLOAD CARD (JIKA FILE SELESAI DIPROSES) -->
+{% if excel_filename %}
+<div class="card border-0 shadow-sm mb-4"
+    style="border-radius: 20px; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1.5px solid #a7f3d0 !important;">
+    <div class="card-body p-4 text-center">
+        <div class="mb-2 text-success">
+            <i class="bi bi-check-circle-fill" style="font-size: 3.2rem;"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">Pengolahan Dokumen NPE / PEB Selesai!</h3>
+        <p class="text-secondary mb-3 fs-6">
+            Data PDF telah diekstrak dan disusun 100% presisi mengikuti templat Excel resmi.
+        </p>
+        <a href="{{ url_for('npe_peb.download_file', filename=excel_filename) }}"
+            class="btn btn-success btn-lg px-5 py-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-white"
+            style="border-radius: 14px; background: #10b981; border: none;">
+            <i class="bi bi-file-earmark-excel-fill fs-4"></i>
+            <span>Download Hasil Laporan Excel (.xlsx)</span>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- UPLOAD VIEW -->
+<div id="dashboardView">
+    <!-- Form Upload File PDF NPE PEB -->
+    <form action="{{ url_for('npe_peb.index') }}" method="POST" enctype="multipart/form-data" id="npeUploadForm">
+        <div class="upload-sim-box" id="npeUploadBox" onclick="document.getElementById('npePdfFiles').click();">
+            <div class="upload-icon-circle">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+            </div>
+            <h5 class="upload-title">Klik atau Tarik Berkas PDF NPE / PEB ke Sini</h5>
+            <p class="upload-subtitle">Mendukung unggah satu atau sekaligus banyak file PDF secara bertahap</p>
+            <span class="badge bg-primary px-3 py-2 rounded-pill fw-semibold mt-2">
+                <i class="bi bi-plus-circle me-1"></i> Pilih / Tambah Berkas PDF
+            </span>
+            <input class="d-none" type="file" id="npePdfFiles" name="files" accept=".pdf" multiple
+                onchange="handleNpeFilesSelected(this);">
+        </div>
+
+        <div id="npeFileListPreview" class="d-none mb-4 mt-3">
+            <div class="p-3 bg-white rounded-4 border shadow-sm" style="max-width: 680px; margin: 0 auto;">
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold" id="npeFileCountBadge">0 Berkas</span>
+                        <strong class="text-dark small" id="npeFileCountLabel">Daftar PDF Terpilih:</strong>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary fw-semibold px-3 rounded-pill" onclick="document.getElementById('npePdfFiles').click();">
+                            <i class="bi bi-plus-circle me-1"></i> + Tambah PDF Lagi
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="clearNpeFiles();">
+                            <i class="bi bi-trash3 me-1"></i> Hapus Semua
+                        </button>
+                    </div>
+                </div>
+                <div class="list-group list-group-flush small" id="npeFileListUl" style="max-height: 240px; overflow-y: auto;"></div>
+                
+                <div class="text-center pt-3 border-top mt-2">
+                    <button type="button" id="btnSubmitNpe" class="btn btn-primary btn-lg px-5 py-3 fw-bold rounded-4 shadow-sm w-100" onclick="triggerNpeProcessing();">
+                        <i class="bi bi-cpu-fill me-2"></i> Ekstrak &amp; Olah Data (<span id="npeBtnCount">0</span> Berkas PDF)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- MODERN HIGH-SPEED LOADING & SKELETON VIEW -->
+<div id="npeProcessingView" style="display: none;">
+    <div class="npe-loading-card">
+        <div class="spinner-ring-wrapper">
+            <div class="spinner-outer-ring"></div>
+            <i class="bi bi-cpu-fill spinner-inner-icon"></i>
+        </div>
+
+        <h4 class="npe-status-text" id="npeStatusMsg">Mengekstrak Data PDF NPE / PEB...</h4>
+        <p class="npe-subtext" id="npeSubtext">Running Gemini AI Extraction & Rule Validation Engine</p>
+
+        <!-- Dynamic Progress Bar -->
+        <div class="npe-progress-container">
+            <div class="npe-progress-bar" id="npeProgressBar"></div>
+        </div>
+        <div class="d-flex justify-content-between fs-6 fw-bold text-secondary">
+            <span>Status: Active</span>
+            <span id="npePercentText">0%</span>
+        </div>
+
+        <!-- Skeleton Row Preview Animation -->
+        <div class="skeleton-container">
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 140px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 90px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 180px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 100px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 120px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 80px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const stagedNpeFiles = new Map();
+
+    function syncNpeDataTransfer() {
+        const input = document.getElementById('npePdfFiles');
+        if (!input) return;
+        try {
+            const dt = new DataTransfer();
+            stagedNpeFiles.forEach(file => {
+                dt.items.add(file);
+            });
+            input.files = dt.files;
+        } catch (e) {
+            console.warn("NPE DataTransfer sync:", e);
+        }
+    }
+
+    function renderNpeFileList() {
+        const previewDiv = document.getElementById('npeFileListPreview');
+        const listUl = document.getElementById('npeFileListUl');
+        const countLabel = document.getElementById('npeFileCountLabel');
+        const countBadge = document.getElementById('npeFileCountBadge');
+        const btnCount = document.getElementById('npeBtnCount');
+        
+        const count = stagedNpeFiles.size;
+        if (count === 0) {
+            if (previewDiv) previewDiv.classList.add('d-none');
+            syncNpeDataTransfer();
+            return;
+        }
+
+        if (listUl) listUl.innerHTML = '';
+        if (countLabel) countLabel.innerText = `${count} Berkas PDF Siap Diolah:`;
+        if (countBadge) countBadge.innerText = `${count} Berkas`;
+        if (btnCount) btnCount.innerText = count;
+
+        let idx = 1;
+        stagedNpeFiles.forEach((file, name) => {
+            const li = document.createElement('div');
+            li.className = 'list-group-item bg-light border rounded-3 mb-2 p-2 px-3 d-flex align-items-center justify-content-between';
+            const sizeKb = (file.size / 1024).toFixed(1);
+
+            li.innerHTML = `
+                <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2">#${idx}</span>
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-5 flex-shrink-0"></i>
+                    <div class="text-truncate">
+                        <strong class="text-dark d-block text-truncate" title="${name}">${name}</strong>
+                        <small class="text-muted">${sizeKb} KB</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-1 px-2" title="Hapus berkas ini" onclick="removeStagedNpeFile('${name.replace(/'/g, "\\'")}');">
+                    <i class="bi bi-x-lg fw-bold"></i>
+                </button>
+            `;
+            if (listUl) listUl.appendChild(li);
+            idx++;
+        });
+
+        syncNpeDataTransfer();
+        if (previewDiv) previewDiv.classList.remove('d-none');
+    }
+
+    function handleNpeFilesSelected(input) {
+        if (!input || !input.files || input.files.length === 0) return;
+        for (let i = 0; i < input.files.length; i++) {
+            const f = input.files[i];
+            stagedNpeFiles.set(f.name, f); // Deduplikasi otomatis
+        }
+        renderNpeFileList();
+    }
+
+    function removeStagedNpeFile(fileName) {
+        if (stagedNpeFiles.has(fileName)) {
+            stagedNpeFiles.delete(fileName);
+            renderNpeFileList();
+        }
+    }
+
+    function clearNpeFiles() {
+        stagedNpeFiles.clear();
+        const input = document.getElementById('npePdfFiles');
+        if (input) input.value = '';
+        renderNpeFileList();
+    }
+
+    // Drag and Drop Handling
+    document.addEventListener('DOMContentLoaded', () => {
+        const box = document.getElementById('npeUploadBox');
+        if (box) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                box.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    box.classList.add('border-primary', 'bg-light');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                box.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    box.classList.remove('border-primary', 'bg-light');
+                }, false);
+            });
+
+            box.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    for (let i = 0; i < dt.files.length; i++) {
+                        const f = dt.files[i];
+                        if (f.name.toLowerCase().endsWith('.pdf')) {
+                            stagedNpeFiles.set(f.name, f);
+                        }
+                    }
+                    renderNpeFileList();
+                }
+            }, false);
+        }
+    });
+
+    /**
+     * Trigger Responsif & Instan: Sembunyikan Tampilan Upload dan Tampilkan Animasi Loading Modern
+     */
+    function triggerNpeProcessing() {
+        const dashboard = document.getElementById('dashboardView');
+        const loader = document.getElementById('npeProcessingView');
+        const form = document.getElementById('npeUploadForm');
+        const fileInput = document.getElementById('npePdfFiles');
+
+        syncNpeDataTransfer();
+        if (stagedNpeFiles.size === 0) return;
+
+        // 1. Sembunyikan Upload Box UI secara instan
+        if (dashboard) dashboard.style.display = 'none';
+
+        // 2. Munculkan Animasi Loading Modern
+        if (loader) loader.style.display = 'block';
+
+        // 3. Jalankan Animasi Progress Bar & Dynamic Status Messages
+        let progress = 0;
+        const pBar = document.getElementById('npeProgressBar');
+        const pText = document.getElementById('npePercentText');
+        const statusMsg = document.getElementById('npeStatusMsg');
+        const subText = document.getElementById('npeSubtext');
+
+        const interval = setInterval(() => {
+            if (progress < 95) {
+                progress += Math.floor(Math.random() * 8) + 4;
+                if (progress > 95) progress = 95;
+
+                if (pBar) pBar.style.width = progress + '%';
+                if (pText) pText.innerText = progress + '%';
+
+                if (progress > 30 && progress <= 65) {
+                    if (statusMsg) statusMsg.innerText = 'Mengekstrak No. Aju, PEB, Invoice & Detail Item...';
+                    if (subText) subText.innerText = 'Parsing AI Structural Table Items & Container Codes';
+                } else if (progress > 65) {
+                    if (statusMsg) statusMsg.innerText = 'Menyusun Laporan Excel Parent-Child Template...';
+                    if (subText) subText.innerText = 'Calculating Formulations, FOB, Kurs & Rekapitulasi';
+                }
+            } else {
+                clearInterval(interval);
+            }
+        }, 120);
+
+        // 4. Submit form secara instan
+        setTimeout(() => {
+            form.submit();
+        }, 80);
+    }
+</script>
+{% endblock %}

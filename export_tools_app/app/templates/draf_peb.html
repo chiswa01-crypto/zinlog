@@ -1,0 +1,759 @@
+{% extends "base.html" %}
+
+{% block title %}Modul Draf PEB Multi-Dokumen - Sistem Ekspor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .draf-peb-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .upload-dropzone {
+        border: 2px dashed #3b82f6;
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s ease-in-out;
+    }
+    .upload-dropzone:hover {
+        background: #eff6ff;
+        border-color: #2563eb;
+        transform: translateY(-2px);
+    }
+
+    .color-section-card {
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid transparent;
+        transition: transform 0.2s;
+    }
+
+    /* SECTION GLOBAL (BIRU/NAVY) */
+    .card-global-section {
+        background: #f0fdf4;
+        border-color: #86efac;
+        background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+        border-color: #bae6fd;
+    }
+
+    /* SECTION KUNING: NO AJU */
+    .card-yellow-section {
+        background: linear-gradient(180deg, #fefce8 0%, #ffffff 100%);
+        border-color: #fef08a;
+    }
+
+    /* SECTION DOKUMEN INDIVIDUAL */
+    .card-doc-item {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    .card-doc-header {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 1.25rem;
+    }
+
+    .badge-global {
+        background: #0284c7;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+
+    .badge-yellow {
+        background: #eab308;
+        color: #713f12;
+        font-weight: 700;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+
+    .badge-green {
+        background: #22c55e;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+
+    .badge-red {
+        background: #ef4444;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+
+    .item-table th {
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .item-table td {
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-md-5">
+
+    <!-- HEADER TITLE & BREADCRUMB -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small text-muted">
+                    <li class="breadcrumb-item"><a href="{{ url_for('scorplog') }}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Draf PEB Multi-Dokumen</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-spreadsheet-fill text-primary"></i>
+                Modul Draf PEB (Multi-Dokumen CEISA)
+            </h2>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 fw-semibold">
+                <i class="bi bi-layers-fill me-1"></i> 21 Sheet CEISA Template Ready
+            </span>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 fw-semibold">
+                <i class="bi bi-check-all me-1"></i> Multi-CIPL Batch Mode
+            </span>
+        </div>
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi {% if category == 'success' %}bi-check-circle-fill{% elif category == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-exclamation-octagon-fill{% endif %} fs-5"></i>
+                        <div>{{ message }}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- ==========================================================================
+         STEP 1: UPLOAD BATCH MULTI-CIPL (PDF ATAU EXCEL)
+         ========================================================================== -->
+    {% if step == 'upload' %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="draf-peb-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 bg-primary bg-opacity-10 text-primary rounded-circle mb-3">
+                        <i class="bi bi-cloud-arrow-up-fill fs-1"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-1">Unggah Berkas CIPL (Commercial Invoice &amp; Packing List)</h4>
+                    <p class="text-muted small mb-0">
+                        Pilih <strong>1 atau sekaligus BANYAK berkas CIPL</strong> (PDF atau Excel). Setiap berkas otomatis dibuatkan 1 Nomor Pengajuan (No. Aju).
+                    </p>
+                </div>
+
+                <form action="{{ url_for('draf_peb.process_cipl') }}" method="POST" enctype="multipart/form-data" id="ciplUploadForm">
+                    <div class="upload-dropzone mb-4" id="dropzoneBox" onclick="document.getElementById('ciplFiles').click();">
+                        <i class="bi bi-cloud-arrow-up text-primary display-4 d-block mb-3"></i>
+                        <h6 class="fw-bold text-dark mb-1">Klik atau Tarik Berkas CIPL ke Sini</h6>
+                        <p class="text-muted small mb-2">Mendukung berkas <code>.pdf</code>, <code>.xlsx</code>, <code>.xls</code> (Bisa tambah bertahap)</p>
+                        <span class="badge bg-primary px-3 py-2 rounded-pill fw-semibold">
+                            <i class="bi bi-plus-circle me-1"></i> Pilih / Tambah Berkas Dokumen
+                        </span>
+                        <input class="d-none" type="file" id="ciplFiles" name="files" accept=".pdf,.xlsx,.xls" multiple onchange="handleFilesSelected(this);">
+                    </div>
+
+                    <div id="fileListPreview" class="d-none mb-4">
+                        <div class="p-3 bg-light rounded-3 border shadow-sm">
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold" id="fileCountBadge">0 Berkas</span>
+                                    <strong class="text-dark small" id="fileCountLabel">Daftar Berkas Terpilih:</strong>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary fw-semibold px-3 rounded-pill" onclick="document.getElementById('ciplFiles').click();">
+                                        <i class="bi bi-plus-circle me-1"></i> + Tambah Berkas Lagi
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="clearSelectedFiles();">
+                                        <i class="bi bi-trash3 me-1"></i> Hapus Semua
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="list-group list-group-flush small" id="fileListUl" style="max-height: 280px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" id="btnSubmitUpload" class="btn btn-primary btn-lg px-5 py-3 fw-bold rounded-3 shadow-sm d-none">
+                            <i class="bi bi-gear-fill me-2"></i> Ekstrak &amp; Buat Draf PEB (<span id="btnDocCount">0</span> Dokumen)
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 pt-3 border-top text-center">
+                    <div class="row g-2 text-start">
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded-3 bg-light small">
+                                <strong><i class="bi bi-check2-circle text-success me-1"></i> Template Acuan:</strong><br>
+                                <span class="text-muted" style="font-size: 0.75rem;">D:\DOC\contoh draf peb.xlsx (21 Sheets)</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded-3 bg-light small">
+                                <strong><i class="bi bi-lock-fill text-warning me-1"></i> Prefix Terkunci:</strong><br>
+                                <span class="text-muted" style="font-size: 0.75rem;"><code>000030ZIK480</code> (Tetap)</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded-3 bg-light small">
+                                <strong><i class="bi bi-calendar-check text-primary me-1"></i> Auto-Increment Aju:</strong><br>
+                                <span class="text-muted" style="font-size: 0.75rem;">No. urut otomatis berurutan per-dokumen</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ==========================================================================
+         STEP 2: FORM EDITOR (GLOBAL SHARED + PER-DOKUMEN AJU)
+         ========================================================================== -->
+    {% if step == 'edit' and documents %}
+    <form action="{{ url_for('draf_peb.generate') }}" method="POST" id="drafPebForm">
+        <input type="hidden" name="documents_json" id="documentsJsonInput" value='{{ documents_json }}'>
+
+        <!-- ====================================================================
+             1. SECTION GLOBAL (SAMA UNTUK SELURUH DOKUMEN PENGAJUAN)
+             ==================================================================== -->
+        <div class="color-section-card card-global-section shadow-sm mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge-global"><i class="bi bi-globe2 me-1"></i> PENGATURAN BERSAMA (GLOBAL)</span>
+                    <h5 class="fw-bold text-dark mb-0">Parameter Bersama untuk Seluruh Dokumen ({{ doc_count }} Pengajuan)</h5>
+                </div>
+                <span class="badge bg-info bg-opacity-25 text-primary border border-info fw-bold px-3 py-1">
+                    <i class="bi bi-check2-all me-1"></i> Diterapkan Otomatis ke Semua Dokumen
+                </span>
+            </div>
+            <p class="text-secondary small mb-3">
+                Bagian ini hanya perlu diatur 1 kali dan otomatis berlaku sama untuk seluruh {{ doc_count }} dokumen Draf PEB yang di-generate.
+            </p>
+
+            <div class="row g-3">
+                <!-- Baris 1: Kantor Pabean -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor" name="global_kode_kantor" value="040300" style="background: #ffffff;">
+                        <label>Kode Kantor Pabean (040300)</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor_periksa" name="global_kode_kantor_periksa" value="150300" style="background: #ffffff;">
+                        <label>Kode Kantor Periksa (150300)</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor_ekspor" name="global_kode_kantor_ekspor" value="040300" style="background: #ffffff;">
+                        <label>Kode Kantor Ekspor (040300)</label>
+                    </div>
+                </div>
+
+                <!-- Baris 2: Pelabuhan & Asal Barang -->
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_pelabuhan_muat" name="global_pelabuhan_muat" value="IDTPP" style="background: #ffffff;">
+                        <label>Pelabuhan Muat (IDTPP)</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_pelabuhan_ekspor" name="global_pelabuhan_ekspor" value="IDTPP" style="background: #ffffff;">
+                        <label>Pelabuhan Ekspor (IDTPP)</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_daerah_asal" name="global_kode_daerah_asal" value="3603" style="background: #ffffff;">
+                        <label>Kode Daerah Asal (3603)</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_negara_asal" name="global_kode_negara_asal" value="ID" style="background: #ffffff;">
+                        <label>Kode Negara Asal (ID)</label>
+                    </div>
+                </div>
+
+                <!-- Baris 3: Kurs & Pernyataan Pabean -->
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <input type="number" step="0.01" class="form-control fw-semibold" id="global_ndpbm_kurs" name="global_ndpbm_kurs" value="17960" style="background: #ffffff;">
+                        <label>Kurs NDPBM (Rp)</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <input type="date" class="form-control fw-semibold" id="global_tanggal_periksa" name="global_tanggal_periksa" value="{{ today_date }}" style="background: #ffffff;">
+                        <label>Tanggal Periksa</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_kota_pernyataan" name="global_kota_pernyataan" value="TANGERANG" style="background: #ffffff;">
+                        <label>Kota Pernyataan</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_nama_pernyataan" name="global_nama_pernyataan" value="EUN SUN KANG" style="background: #ffffff;">
+                        <label>Nama Penandatangan</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-floating">
+                        <input type="text" class="form-control fw-semibold" id="global_jabatan_pernyataan" name="global_jabatan_pernyataan" value="MANAGER" style="background: #ffffff;">
+                        <label>Jabatan</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================================
+             2. SECTION PER-DOKUMEN (UNIK TIAP PENGAJUAN)
+             ==================================================================== -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-collection-fill text-primary"></i>
+                Daftar Dokumen Pengajuan ({{ doc_count }} Berkas CIPL)
+            </h5>
+            <span class="text-muted small">Tujuan, B/L, Transportasi, dan Data Barang spesifik per-dokumen</span>
+        </div>
+
+        {% for doc in documents %}
+        {% set d_idx = loop.index0 %}
+        <div class="card-doc-item">
+            <!-- Card Header -->
+            <div class="card-doc-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">DOKUMEN #{{ loop.index }}</span>
+                    <strong class="text-dark fs-6"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> {{ doc.filename }}</strong>
+                    <span class="badge bg-light text-dark border">Inv: {{ doc.invoice_no }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted small">Penerima (Consignee): <strong class="text-primary">{{ doc.consignee_name or doc.buyer_name }}</strong></span>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-2 py-1">
+                        {{ doc.total_qty }} PCS | ${{ "{:,.2f}".format(doc.total_fob) }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-3 p-md-4">
+                <!-- 1. NOMOR AJU KHUSUS DOKUMEN INI -->
+                <div class="p-3 rounded-3 mb-3" style="background: #fefce8; border: 1px solid #fef08a;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge-yellow"><i class="bi bi-bookmark-star-fill me-1"></i> WARNA KUNING</span>
+                            <strong class="text-dark small">Nomor Pengajuan PEB Dokumen #{{ loop.index }} (26 Digit CEISA):</strong>
+                        </div>
+                        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning fw-bold" style="font-size: 0.75rem;">
+                            <i class="bi bi-lock-fill text-warning me-1"></i> Prefix 000030ZIK480 Tetap
+                        </span>
+                    </div>
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-lg-8">
+                            <div class="input-group shadow-sm">
+                                <!-- 1. Prefix Tetap (12 digit) -->
+                                <span class="input-group-text fw-bold text-dark" style="background: #fef08a; border: 2px solid #eab308; border-right: none; font-family: monospace; letter-spacing: 1px;" title="Prefix Tetap">
+                                    <i class="bi bi-lock-fill text-muted me-1"></i> 000030ZIK480
+                                </span>
+
+                                <!-- 2. Tanggal CIPL YYYYMMDD (8 digit) -->
+                                <input type="text" class="form-control fw-bold text-success text-center" 
+                                       id="doc_{{ d_idx }}_date" name="doc_{{ d_idx }}_date" 
+                                       value="{{ doc.date_8digit }}" maxlength="8" placeholder="YYYYMMDD" required
+                                       oninput="updateDocAjuPreview({{ d_idx }});"
+                                       style="background: #ffffff; border: 2px solid #eab308; border-right: none; font-family: monospace; letter-spacing: 1px; max-width: 125px;">
+                                
+                                <!-- Datepicker Button -->
+                                <button class="btn btn-outline-warning text-dark fw-bold px-3 d-flex align-items-center justify-content-center" 
+                                        type="button" onclick="openDocDatePicker({{ d_idx }});" title="Pilih Tanggal dari Kalender"
+                                        style="border: 2px solid #eab308; border-left: none; border-right: 2px solid #eab308; background: #fef9c3;">
+                                    <i class="bi bi-calendar-date-fill text-success fs-6"></i>
+                                </button>
+                                <input type="date" id="hidden_date_picker_{{ d_idx }}" class="d-none" onchange="onDocDatePicked({{ d_idx }}, this.value);">
+
+                                <!-- 3. Nomor Urut Manual (6 digit) -->
+                                <input type="text" class="form-control fw-bold text-primary text-center" 
+                                       id="doc_{{ d_idx }}_seq" name="doc_{{ d_idx }}_seq" 
+                                       value="{{ doc.seq_6digit }}" maxlength="6" placeholder="000635" required
+                                       oninput="updateDocAjuPreview({{ d_idx }});"
+                                       style="background: #ffffff; border: 2px solid #eab308; border-left: none; font-family: monospace; letter-spacing: 2px;">
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mt-1 px-1" style="font-size: 0.75rem;">
+                                <span>🔒 12 Digit Tetap</span>
+                                <span class="text-success fw-semibold"><i class="bi bi-calendar-event me-1"></i>8 Digit Tanggal</span>
+                                <span class="text-primary fw-semibold">✏️ 6 Digit Nomor Urut (Auto-Increment)</span>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="p-2 bg-white rounded-3 border border-warning text-center">
+                                <small class="text-muted d-block fw-bold" style="font-size: 0.7rem;">PREVIEW NO. AJU LENGKAP</small>
+                                <code class="fs-6 fw-bold text-dark" id="preview_doc_{{ d_idx }}">{{ doc.nomor_aju }}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. PARAMETER TUJUAN, B/L & TRANSPORTASI DOKUMEN INI (SALING BERDEKATAN) -->
+                <div class="p-3 bg-light rounded-3 border mb-3">
+                    <div class="row g-3">
+                        <!-- Baris 1: Negara Tujuan & Pelabuhan Tujuan (Bersebelahan) -->
+                        <div class="col-md-3 col-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control fw-bold text-primary" id="doc_{{ d_idx }}_country" name="doc_{{ d_idx }}_country" value="{{ doc.country }}" style="background: #ffffff;">
+                                <label>Kode Negara Tujuan</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control fw-bold text-primary" id="doc_{{ d_idx }}_pelabuhan_tujuan" name="doc_{{ d_idx }}_pelabuhan_tujuan" value="{{ doc.pelabuhan_tujuan }}" style="background: #ffffff;">
+                                <label>Kode Pelabuhan Tujuan</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control fw-semibold" id="doc_{{ d_idx }}_bl_no" name="doc_{{ d_idx }}_bl_no" value="{{ doc.bl_no }}" style="background: #ffffff;">
+                                <label>Nomor B/L</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="form-floating">
+                                <input type="date" class="form-control fw-semibold" id="doc_{{ d_idx }}_bl_date" name="doc_{{ d_idx }}_bl_date" value="{{ doc.bl_date }}" style="background: #ffffff;">
+                                <label>Tanggal B/L (YYYY-MM-DD)</label>
+                            </div>
+                        </div>
+
+                        <!-- Baris 2: Transportasi & Penerima -->
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control fw-semibold" id="doc_{{ d_idx }}_vessel" name="doc_{{ d_idx }}_vessel" value="{{ doc.vessel }}" style="background: #ffffff;">
+                                <label>Nama Kapal / Vessel</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control fw-semibold" id="doc_{{ d_idx }}_voy_no" name="doc_{{ d_idx }}_voy_no" value="{{ doc.voy_no or '' }}" placeholder="Isi Nomor Voyage" style="background: #ffffff;">
+                                <label>Nomor Voyage (Input Manual)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control fw-semibold" id="doc_{{ d_idx }}_flag_code" name="doc_{{ d_idx }}_flag_code" value="{{ doc.flag_code or '' }}" placeholder="Contoh: SG" style="background: #ffffff;">
+                                <label>Kode Bendera Pengangkut (Input Manual)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. DETAIL BARANG DOKUMEN INI -->
+                <div class="table-responsive rounded-3 border bg-white" style="max-height: 200px; overflow-y: auto;">
+                    <table class="table table-hover table-sm mb-0 item-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">No</th>
+                                <th>Pos Tarif / HS</th>
+                                <th>Kode Barang / F-Code</th>
+                                <th>Uraian Barang</th>
+                                <th>PO</th>
+                                <th class="text-end">Qty (PCE)</th>
+                                <th class="text-end">Netto (KG)</th>
+                                <th class="text-end pe-3">FOB ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for it in doc['items'] %}
+                            <tr>
+                                <td class="ps-3 fw-bold">{{ loop.index }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ it.code }}</span></td>
+                                <td class="fw-semibold text-primary">{{ it.f_code or it.sku }}</td>
+                                <td class="small">{{ it.des }}</td>
+                                <td class="small text-muted">{{ it.po }}</td>
+                                <td class="text-end fw-bold">{{ it.qt }}</td>
+                                <td class="text-end text-muted">{{ it.nw }}</td>
+                                <td class="text-end fw-bold text-success pe-3">${{ "{:,.2f}".format(it.fob) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- SUBMIT GENERATE BUTTON -->
+        <div class="text-end mb-5">
+            <button type="submit" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-lg d-inline-flex align-items-center gap-2 text-white"
+                    style="border-radius: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none;">
+                <i class="bi bi-file-earmark-excel-fill fs-4"></i>
+                <span>Generate &amp; Download Draf PEB Multi-Aju (.xlsx)</span>
+                <i class="bi bi-arrow-right fs-5"></i>
+            </button>
+        </div>
+    </form>
+    {% endif %}
+
+    <!-- ==========================================================================
+         STEP 3: HASIL GENERATE & DOWNLOAD
+         ========================================================================== -->
+    {% if step == 'result' and excel_filename %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="draf-peb-card p-4 p-md-5 text-center">
+                <div class="d-inline-flex p-3 bg-success bg-opacity-10 text-success rounded-circle mb-3">
+                    <i class="bi bi-check-circle-fill display-4"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-2">Draf PEB Konsolidasi Berhasil Dibuat!</h3>
+                <p class="text-muted mb-4">
+                    Berkas Excel 21 Sheet resmi CEISA berisi <strong>{{ doc_count }} Nomor Pengajuan (No. Aju)</strong> telah digenerasi sesuai format standar <code>contoh draf peb.xlsx</code>.
+                </p>
+
+                <!-- Daftar No Aju -->
+                <div class="p-3 bg-light rounded-3 border text-start mb-4">
+                    <strong class="text-dark small d-block mb-2">Ringkasan Nomor Aju yang Digenerasi:</strong>
+                    <div class="row g-2">
+                        {% for doc in documents %}
+                        <div class="col-md-6">
+                            <div class="p-2 bg-white rounded border small d-flex align-items-center justify-content-between">
+                                <div>
+                                    <span class="badge bg-primary me-1">#{{ loop.index }}</span>
+                                    <strong class="text-dark">{{ doc.nomor_aju }}</strong>
+                                </div>
+                                <span class="text-muted" style="font-size: 0.75rem;">{{ doc.total_qty }} PCS</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- DOWNLOAD BUTTON -->
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{{ url_for('draf_peb.download_file', filename=excel_filename) }}" 
+                       class="btn btn-success btn-lg px-5 py-3 fw-bold rounded-4 shadow-lg d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-download fs-4"></i>
+                        <span>Download Draf PEB (.xlsx)</span>
+                    </a>
+                    <a href="{{ url_for('draf_peb.index') }}" 
+                       class="btn btn-outline-secondary btn-lg px-4 py-3 rounded-4 fw-semibold">
+                        <i class="bi bi-arrow-repeat me-1"></i> Buat Draf Baru
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Accumulative Staged File Store (Map: filename -> File)
+    const stagedCiplFiles = new Map();
+
+    function syncCiplDataTransfer() {
+        const input = document.getElementById('ciplFiles');
+        if (!input) return;
+        
+        try {
+            const dt = new DataTransfer();
+            stagedCiplFiles.forEach(file => {
+                dt.items.add(file);
+            });
+            input.files = dt.files;
+        } catch (e) {
+            console.warn("DataTransfer sync:", e);
+        }
+    }
+
+    function renderCiplFileList() {
+        const previewDiv = document.getElementById('fileListPreview');
+        const listUl = document.getElementById('fileListUl');
+        const countLabel = document.getElementById('fileCountLabel');
+        const countBadge = document.getElementById('fileCountBadge');
+        const btnDocCount = document.getElementById('btnDocCount');
+        const submitBtn = document.getElementById('btnSubmitUpload');
+        
+        const count = stagedCiplFiles.size;
+        if (count === 0) {
+            if (previewDiv) previewDiv.classList.add('d-none');
+            if (submitBtn) submitBtn.classList.add('d-none');
+            syncCiplDataTransfer();
+            return;
+        }
+
+        if (listUl) listUl.innerHTML = '';
+        if (countLabel) countLabel.innerText = `${count} Berkas CIPL Siap Diproses:`;
+        if (countBadge) countBadge.innerText = `${count} Berkas`;
+        if (btnDocCount) btnDocCount.innerText = count;
+
+        let idx = 1;
+        stagedCiplFiles.forEach((file, name) => {
+            const li = document.createElement('div');
+            li.className = 'list-group-item bg-white border rounded-3 mb-2 p-2 px-3 d-flex align-items-center justify-content-between shadow-sm';
+            
+            const isPdf = name.toLowerCase().endsWith('.pdf');
+            const iconClass = isPdf ? 'bi-file-earmark-pdf-fill text-danger' : 'bi-file-earmark-excel-fill text-success';
+            const sizeKb = (file.size / 1024).toFixed(1);
+
+            li.innerHTML = `
+                <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2">#${idx}</span>
+                    <i class="bi ${iconClass} fs-5 flex-shrink-0"></i>
+                    <div class="text-truncate">
+                        <strong class="text-dark d-block text-truncate" title="${name}">${name}</strong>
+                        <small class="text-muted">${sizeKb} KB</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-1 px-2" title="Hapus berkas ini" onclick="removeStagedCiplFile('${name.replace(/'/g, "\\'")}');">
+                    <i class="bi bi-x-lg fw-bold"></i>
+                </button>
+            `;
+            if (listUl) listUl.appendChild(li);
+            idx++;
+        });
+
+        syncCiplDataTransfer();
+
+        if (previewDiv) previewDiv.classList.remove('d-none');
+        if (submitBtn) submitBtn.classList.remove('d-none');
+    }
+
+    function handleFilesSelected(input) {
+        if (!input || !input.files || input.files.length === 0) return;
+        
+        for (let i = 0; i < input.files.length; i++) {
+            const f = input.files[i];
+            // Otomatis menimpa jika nama file sama (Deduplikasi)
+            stagedCiplFiles.set(f.name, f);
+        }
+        renderCiplFileList();
+    }
+
+    function removeStagedCiplFile(fileName) {
+        if (stagedCiplFiles.has(fileName)) {
+            stagedCiplFiles.delete(fileName);
+            renderCiplFileList();
+        }
+    }
+
+    function clearSelectedFiles() {
+        stagedCiplFiles.clear();
+        const input = document.getElementById('ciplFiles');
+        if (input) input.value = '';
+        renderCiplFileList();
+    }
+
+    // Drag and Drop Handling on Dropzone
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropzone = document.getElementById('dropzoneBox');
+        if (dropzone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('border-primary', 'bg-light');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('border-primary', 'bg-light');
+                }, false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    for (let i = 0; i < dt.files.length; i++) {
+                        const f = dt.files[i];
+                        stagedCiplFiles.set(f.name, f);
+                    }
+                    renderCiplFileList();
+                }
+            }, false);
+        }
+    });
+
+    function updateDocAjuPreview(idx) {
+        const prefix = "000030ZIK480";
+        const dateInput = document.getElementById(`doc_${idx}_date`);
+        const seqInput = document.getElementById(`doc_${idx}_seq`);
+        const previewElem = document.getElementById(`preview_doc_${idx}`);
+
+        const datePart = (dateInput ? dateInput.value : "").trim();
+        const seqPart = (seqInput ? seqInput.value : "").trim();
+        const fullAju = prefix + datePart + seqPart;
+
+        if (previewElem) previewElem.innerText = fullAju;
+    }
+
+    function openDocDatePicker(idx) {
+        const dp = document.getElementById(`hidden_date_picker_${idx}`);
+        const dateInput = document.getElementById(`doc_${idx}_date`);
+        if (dp) {
+            if (dateInput && dateInput.value && dateInput.value.length === 8) {
+                const y = dateInput.value.substring(0, 4);
+                const m = dateInput.value.substring(4, 6);
+                const d = dateInput.value.substring(6, 8);
+                dp.value = `${y}-${m}-${d}`;
+            }
+            if (typeof dp.showPicker === 'function') {
+                dp.showPicker();
+            } else {
+                dp.click();
+            }
+        }
+    }
+
+    function onDocDatePicked(idx, val) {
+        if (!val) return;
+        const yyyymmdd = val.replace(/-/g, '');
+        const dateInput = document.getElementById(`doc_${idx}_date`);
+        if (dateInput) {
+            dateInput.value = yyyymmdd;
+        }
+        updateDocAjuPreview(idx);
+    }
+</script>
+{% endblock %}

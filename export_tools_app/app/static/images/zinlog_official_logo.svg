@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldGradHero" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dfbc7a" />
+      <stop offset="50%" stop-color="#fef0cd" />
+      <stop offset="100%" stop-color="#b88b4a" />
+    </linearGradient>
+    <linearGradient id="silverGradHero" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="40%" stop-color="#d1fae5" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </linearGradient>
+    <linearGradient id="sageTextHero" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a3cfbb" />
+      <stop offset="100%" stop-color="#d1fae5" />
+    </linearGradient>
+    <filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#34d399" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- ICON EMBLEM -->
+  <g transform="translate(20, 10)" filter="url(#heroGlow)">
+    <!-- Outer Mandala Circle Pattern -->
+    <circle cx="70" cy="70" r="64" fill="none" stroke="url(#goldGradHero)" stroke-width="1.8" opacity="0.85"/>
+    <circle cx="70" cy="70" r="54" fill="none" stroke="url(#goldGradHero)" stroke-width="1.2" opacity="0.65"/>
+    <!-- Mandala Petals -->
+    <g stroke="url(#goldGradHero)" stroke-width="1.4" fill="none" opacity="0.75">
+      <path d="M70,12 C86,36 86,104 70,128 C54,104 54,36 70,12 Z"/>
+      <path d="M12,70 C36,86 104,86 128,70 C104,54 36,54 12,70 Z"/>
+      <path d="M28,28 C58,45 95,95 112,112 C95,95 45,58 28,28 Z"/>
+      <path d="M112,28 C95,58 45,95 28,112 C45,95 95,45 112,28 Z"/>
+    </g>
+
+    <!-- Stylized Metallic 'Z' Symbol -->
+    <path d="M40,42 L102,42 C105,42 107,45 105,48 L56,98 L100,98 C103,98 105,101 102,104 L38,104 C35,104 33,101 35,98 L84,48 L40,48 C37,48 37,42 40,42 Z" 
+          fill="url(#silverGradHero)" stroke="#061710" stroke-width="1.2"/>
+    <path d="M42,45 L100,45 L50,95 L98,95" fill="none" stroke="#ffffff" stroke-width="1.8" opacity="0.9"/>
+
+    <!-- Package / Box in center -->
+    <g transform="translate(34, 54)">
+      <polygon points="17,0 34,8.5 17,17 0,8.5" fill="#d4a373" stroke="#8a6336" stroke-width="1"/>
+      <polygon points="0,8.5 17,17 17,34 0,25.5" fill="#b08968" stroke="#8a6336" stroke-width="1"/>
+      <polygon points="17,17 34,8.5 34,25.5 17,34" fill="#c59b76" stroke="#8a6336" stroke-width="1"/>
+      <!-- Seal -->
+      <circle cx="8.5" cy="21" r="4.5" fill="#34d399" stroke="#059669" stroke-width="0.8"/>
+      <text x="8.5" y="23.5" font-family="'Plus Jakarta Sans', Arial" font-size="5" font-weight="900" fill="#ffffff" text-anchor="middle">z</text>
+    </g>
+
+    <!-- Upward Golden Trade Arrow -->
+    <path d="M82,95 Q96,76 106,60 L112,68 L110,50 L94,52 L100,60 Q90,74 78,92 Z" 
+          fill="url(#goldGradHero)"/>
+  </g>
+
+  <!-- TEXT TYPOGRAPHY -->
+  <g transform="translate(180, 25)">
+    <!-- Brand Wordmark -->
+    <text x="0" y="65" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-size="74" font-weight="900" 
+          letter-spacing="4" fill="url(#sageTextHero)" filter="url(#heroGlow)">ZINLOG</text>
+    
+    <!-- Slogan / Subtitle -->
+    <text x="3" y="100" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-size="16.5" font-weight="700" 
+          letter-spacing="4.5" fill="#a7f3d0" opacity="0.95">SMART LOGISTICS FOR GLOBAL TRADE</text>
+  </g>
+</svg>

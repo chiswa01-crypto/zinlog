@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun Baru - ZINLOG Smart Logistics</title>
+
+    <!-- Google Fonts & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Bootstrap 5.3 CDN CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #071a12 0%, #0d2818 50%, #081c13 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.12) 0%, rgba(5, 23, 16, 0.7) 100%);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1;
+        }
+
+        .landing-container {
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .brand-logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .brand-transparent-logo-img {
+            max-width: 160px;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 0.5rem auto;
+            filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 25px rgba(52, 211, 153, 0.2));
+        }
+
+        /* CARD REGISTER */
+        .register-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 2.2rem 2.2rem 1.6rem 2.2rem;
+            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.65);
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            animation: cardFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardFadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            font-weight: 700;
+            border-radius: 24px;
+            padding: 0.45rem 1.2rem;
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* INPUT GROUPS */
+        .custom-input-group {
+            position: relative;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-left {
+            position: absolute;
+            left: 1.1rem;
+            color: #64748b;
+            font-size: 1.15rem;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-form-control {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.85rem;
+            font-size: 0.925rem;
+            font-weight: 500;
+            color: #1e293b;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .custom-form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+        }
+
+        .custom-form-control::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        /* SUBMIT BUTTON */
+        .btn-submit-daftar {
+            background: #0d2818;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border: none;
+            border-radius: 14px;
+            padding: 0.9rem 1.5rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(13, 40, 24, 0.35);
+            margin-top: 0.5rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-submit-daftar:hover {
+            background: #15462c;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(13, 40, 24, 0.45);
+        }
+
+        /* CARD FOOTER */
+        .card-footer-divider {
+            margin-top: 1.25rem;
+            padding-top: 1.15rem;
+            border-top: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .link-masuk-disini {
+            color: #0f3824;
+            font-weight: 800;
+            text-decoration: underline;
+            margin-left: 0.25rem;
+            transition: color 0.2s ease;
+        }
+
+        .link-masuk-disini:hover {
+            color: #10b981;
+        }
+
+        .alert-custom {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <!-- Brand Logo & Header -->
+        <div class="brand-logo-container">
+            <img src="{{ url_for('static', filename='images/zinlog_logo_no_bg.png') }}?v=20260816_v3" alt="ZINLOG - Smart Logistics for Global Trade" class="brand-transparent-logo-img">
+            <h4 class="text-white fw-bold mb-1" style="font-family: 'Outfit', sans-serif;">Pendaftaran Akun Baru</h4>
+            <p class="text-white-50 small mb-2">Buat akun untuk mengakses seluruh ekosistem otomasi kepabeanan ZINLOG.</p>
+        </div>
+
+        <!-- Register Card -->
+        <div class="register-card">
+            <!-- Badge -->
+            <div class="d-flex justify-content-center">
+                <div class="status-badge-pill">
+                    <i class="bi bi-person-plus-fill"></i>
+                    <span>Buat Akun ZINLOG Baru</span>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-custom alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Register Form -->
+            <form action="{{ url_for('auth.register') }}" method="POST">
+                <!-- 1. Nama Lengkap -->
+                <div class="custom-input-group">
+                    <span class="input-icon-left">
+                        <i class="bi bi-person-badge"></i>
+                    </span>
+                    <input type="text" name="name" class="custom-form-control" placeholder="Nama Lengkap" value="{{ name or '' }}" required autofocus>
+                </div>
+
+                <!-- 2. Username -->
+                <div class="custom-input-group">
+                    <span class="input-icon-left">
+                        <i class="bi bi-person"></i>
+                    </span>
+                    <input type="text" name="username" class="custom-form-control" placeholder="Username (huruf kecil & angka)" value="{{ username or '' }}" required>
+                </div>
+
+                <!-- 3. Email -->
+                <div class="custom-input-group">
+                    <span class="input-icon-left">
+                        <i class="bi bi-envelope"></i>
+                    </span>
+                    <input type="email" name="email" class="custom-form-control" placeholder="Alamat Email Resmi" value="{{ email or '' }}" required>
+                </div>
+
+                <!-- 4. Kata Sandi -->
+                <div class="custom-input-group">
+                    <span class="input-icon-left">
+                        <i class="bi bi-lock"></i>
+                    </span>
+                    <input type="password" name="password" class="custom-form-control" placeholder="Kata Sandi (min. 6 karakter)" required>
+                </div>
+
+                <!-- 5. Konfirmasi Kata Sandi -->
+                <div class="custom-input-group">
+                    <span class="input-icon-left">
+                        <i class="bi bi-shield-lock"></i>
+                    </span>
+                    <input type="password" name="confirm_password" class="custom-form-control" placeholder="Ulangi Kata Sandi" required>
+                </div>
+
+                <!-- Submit Button: Daftar Akun -> -->
+                <button type="submit" class="btn-submit-daftar">
+                    <span>Daftar Akun Sekarang</span>
+                    <i class="bi bi-arrow-right-circle fs-5"></i>
+                </button>
+            </form>
+
+            <!-- Footer: Sudah memiliki akun? Masuk Disini -->
+            <div class="card-footer-divider">
+                <span>Sudah memiliki akun?</span>
+                <a href="{{ url_for('auth.login') }}" class="link-masuk-disini">Masuk Disini</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

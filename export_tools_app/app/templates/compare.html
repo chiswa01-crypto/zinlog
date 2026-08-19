@@ -1,0 +1,535 @@
+{% extends 'base.html' %}
+
+{% block title %}Mass Comparison (PEB vs CIPL) - ZINLOG Smart Logistics{% endblock %}
+
+{% block breadcrumb %}Export &gt; Mass Comparison{% endblock %}
+{% block page_title %}Mass Reconciliation & Comparison{% endblock %}
+{% block page_subtitle %}Automated cross-document verification between PEB and CIPL data.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       SCORPLOG MODULAR UI: DUAL-UPLOAD DROPZONES & COMPARE ANIMATIONS
+       ========================================================================== */
+    .dual-upload-card {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(10px);
+        border: 2px dashed #0284c7;
+        border-radius: 22px;
+        padding: 2.25rem 1.75rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 24px rgba(12, 25, 46, 0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .dual-upload-card:hover {
+        background: #ffffff;
+        transform: translateY(-3px);
+        box-shadow: 0 14px 32px rgba(2, 132, 199, 0.15);
+        border-color: #0369a1;
+    }
+
+    .dual-upload-card.peb-card {
+        border-color: #f97316;
+    }
+
+    .dual-upload-card.peb-card:hover {
+        border-color: #ea580c;
+        box-shadow: 0 14px 32px rgba(249, 115, 22, 0.15);
+    }
+
+    .dual-upload-icon-circle {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        color: #ffffff;
+        font-size: 2rem;
+    }
+
+    .dual-upload-icon-circle.peb-theme {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        box-shadow: 0 8px 20px rgba(249, 115, 22, 0.35);
+    }
+
+    .dual-upload-icon-circle.cipl-theme {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.35);
+    }
+
+    .dual-upload-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0c192e;
+        margin-bottom: 0.3rem;
+    }
+
+    .dual-upload-subtitle {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: 0.75rem;
+    }
+
+    .file-status-badge {
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 0.4em 1em;
+        border-radius: 20px;
+        margin-top: 0.5rem;
+        word-break: break-all;
+        max-width: 90%;
+        animation: fadeInFast 0.2s ease;
+    }
+
+    .btn-launch-compare {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 1.1rem;
+        padding: 1.05rem 3.5rem;
+        border-radius: 16px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.85rem;
+        box-shadow: 0 10px 28px rgba(249, 115, 22, 0.4);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-launch-compare:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 34px rgba(249, 115, 22, 0.55);
+        color: #ffffff;
+    }
+
+    /* LOADING & SKELETON ANIMATIONS */
+    .compare-loading-card {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(12, 25, 46, 0.08);
+        padding: 3rem 2.5rem;
+        text-align: center;
+        max-width: 680px;
+        margin: 1.5rem auto;
+        animation: fadeInFast 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes fadeInFast {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .spinner-ring-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem auto;
+    }
+
+    .spinner-outer-ring {
+        width: 80px;
+        height: 80px;
+        border: 4px solid #e0f2fe;
+        border-top: 4px solid #0284c7;
+        border-right: 4px solid #0369a1;
+        border-radius: 50%;
+        animation: spinRing 0.8s linear infinite;
+        box-shadow: 0 0 18px rgba(2, 132, 199, 0.35);
+    }
+
+    .spinner-inner-icon {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        color: #0c192e;
+        animation: pulseIcon 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes spinRing {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseIcon {
+        0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.8; }
+        100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    }
+
+    .compare-progress-container {
+        width: 100%;
+        background: #f1f5f9;
+        border-radius: 12px;
+        height: 12px;
+        overflow: hidden;
+        margin: 1.25rem 0 0.75rem 0;
+        position: relative;
+    }
+
+    .compare-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #0284c7 0%, #0369a1 50%, #075985 100%);
+        border-radius: 12px;
+        transition: width 0.15s linear;
+        box-shadow: 0 0 10px rgba(2, 132, 199, 0.5);
+    }
+
+    .compare-status-text {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0c192e;
+        margin-bottom: 0.35rem;
+    }
+
+    .compare-subtext {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .skeleton-container {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: left;
+    }
+
+    .skeleton-row {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 0.85rem 1.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #e2e8f0;
+    }
+
+    .skeleton-box {
+        background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+        background-size: 200% 100%;
+        animation: skeletonShimmer 1.2s infinite;
+        border-radius: 6px;
+    }
+
+    @keyframes skeletonShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- PROCESSED RESULT / DOWNLOAD LINK (JIKA FILE SELESAI DIPROSES) -->
+{% if excel_file %}
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 20px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1.5px solid #bae6fd !important;">
+    <div class="card-body p-4 text-center">
+        <div class="mb-2 text-info">
+            <i class="bi bi-check-circle-fill" style="font-size: 3.2rem;"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">Komparasi Massal PEB vs CIPL Selesai!</h3>
+        <p class="text-secondary mb-3 fs-6">
+            Laporan Komparasi Massal Database 3 Sheet siap diunduh.
+        </p>
+        <a href="{{ url_for('compare.download_excel', filename=excel_file) }}" 
+           class="btn btn-info btn-lg px-5 py-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-white"
+           style="border-radius: 14px; background: #0284c7; border: none;">
+            <i class="bi bi-file-earmark-excel-fill fs-4"></i>
+            <span>Download Database 3 Sheet (.xlsx)</span>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- DUAL DOKUMEN UPLOAD VIEW (#dashboardView) -->
+<div id="dashboardView">
+    <form action="{{ url_for('compare.index') }}" method="POST" enctype="multipart/form-data" id="compareUploadForm" onsubmit="return handleCompareSubmit(event);">
+        
+        <div class="row g-4 mb-4">
+            <!-- 1. DROPZONE DOKUMEN PEB -->
+            <div class="col-md-6">
+                <div class="dual-upload-card peb-card" id="pebBox" onclick="document.getElementById('comparePebFiles').click();">
+                    <div class="dual-upload-icon-circle peb-theme">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                    </div>
+                    <h5 class="dual-upload-title">1. Upload Dokumen PEB / NPE</h5>
+                    <p class="dual-upload-subtitle">Format PDF (Contoh: 515.pdf)</p>
+
+                    <div class="file-status-badge" id="pebFileBadge" style="display: none;">
+                        <i class="bi bi-check-circle-fill me-1"></i> <span id="pebFileName">0 File Selected</span>
+                    </div>
+
+                    <input class="d-none" type="file" id="comparePebFiles" name="peb_files" accept=".pdf" multiple onchange="updateFileBadge('peb');">
+                </div>
+            </div>
+
+            <!-- 2. DROPZONE DOKUMEN CIPL -->
+            <div class="col-md-6">
+                <div class="dual-upload-card" id="ciplBox" onclick="document.getElementById('compareCiplFiles').click();">
+                    <div class="dual-upload-icon-circle cipl-theme">
+                        <i class="bi bi-box2-fill"></i>
+                    </div>
+                    <h5 class="dual-upload-title">2. Upload Dokumen CIPL</h5>
+                    <p class="dual-upload-subtitle">Format PDF / Excel (.pdf, .xlsx, .xls)</p>
+
+                    <div class="file-status-badge" id="ciplFileBadge" style="display: none;">
+                        <i class="bi bi-check-circle-fill me-1"></i> <span id="ciplFileName">0 File Selected</span>
+                    </div>
+
+                    <input class="d-none" type="file" id="compareCiplFiles" name="cipl_files" accept=".pdf, .xlsx, .xls" multiple onchange="updateFileBadge('cipl');">
+                </div>
+            </div>
+        </div>
+
+        <!-- TOMBOL JALANKAN KOMPARASI -->
+        <div class="text-center mt-3">
+            <button type="submit" class="btn-launch-compare" id="btnCompareSubmit">
+                <i class="bi bi-arrow-left-right fs-4"></i>
+                <span>Jalankan Komparasi PEB & CIPL</span>
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<!-- MODERN HIGH-SPEED LOADING & SKELETON VIEW (COMPARE) -->
+<div id="compareProcessingView" style="display: none;">
+    <div class="compare-loading-card">
+        <div class="spinner-ring-wrapper">
+            <div class="spinner-outer-ring"></div>
+            <svg class="sidebar-svg-icon spinner-inner-icon text-info" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v15M7 21h10"></path>
+                <path d="M4 7h16"></path>
+                <circle cx="12" cy="5" r="1.2" fill="currentColor"></circle>
+                <path d="M2.5 13.5l2.5-6 2.5 6h-5z"></path>
+                <path d="M16.5 13.5l2.5-6 2.5 6h-5z"></path>
+            </svg>
+        </div>
+
+        <h4 class="compare-status-text" id="compareStatusMsg">Mengekstrak & Mencocokkan Dokumen PEB vs CIPL...</h4>
+        <p class="compare-subtext" id="compareSubtext">Running Gemini AI Batch Matching & 3-Sheet Reconciliation Engine</p>
+
+        <!-- Dynamic Progress Bar -->
+        <div class="compare-progress-container">
+            <div class="compare-progress-bar" id="compareProgressBar"></div>
+        </div>
+        <div class="d-flex justify-content-between fs-6 fw-bold text-secondary">
+            <span>Status: Active Processing</span>
+            <span id="comparePercentText">0%</span>
+        </div>
+
+        <!-- Skeleton Row Preview Animation -->
+        <div class="skeleton-container">
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 160px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 90px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 190px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 100px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 140px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 80px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const stagedComparePebFiles = new Map();
+    const stagedCompareCiplFiles = new Map();
+
+    function syncCompareDataTransfer(type) {
+        if (type === 'peb') {
+            const input = document.getElementById('comparePebFiles');
+            if (!input) return;
+            try {
+                const dt = new DataTransfer();
+                stagedComparePebFiles.forEach(f => dt.items.add(f));
+                input.files = dt.files;
+            } catch (e) {
+                console.warn("PEB DataTransfer sync:", e);
+            }
+        } else if (type === 'cipl') {
+            const input = document.getElementById('compareCiplFiles');
+            if (!input) return;
+            try {
+                const dt = new DataTransfer();
+                stagedCompareCiplFiles.forEach(f => dt.items.add(f));
+                input.files = dt.files;
+            } catch (e) {
+                console.warn("CIPL DataTransfer sync:", e);
+            }
+        }
+    }
+
+    /**
+     * Memperbarui Badge Status Pilihan File secara Realtime
+     */
+    function updateFileBadge(type) {
+        if (type === 'peb') {
+            const input = document.getElementById('comparePebFiles');
+            if (input && input.files) {
+                for (let i = 0; i < input.files.length; i++) {
+                    const f = input.files[i];
+                    stagedComparePebFiles.set(f.name, f); // Deduplikasi
+                }
+            }
+            syncCompareDataTransfer('peb');
+            const badge = document.getElementById('pebFileBadge');
+            const label = document.getElementById('pebFileName');
+            const count = stagedComparePebFiles.size;
+            if (count > 0) {
+                if (label) label.innerText = `✓ ${count} File PEB Terpilih`;
+                if (badge) badge.style.display = 'inline-block';
+            } else {
+                if (badge) badge.style.display = 'none';
+            }
+        } else if (type === 'cipl') {
+            const input = document.getElementById('compareCiplFiles');
+            if (input && input.files) {
+                for (let i = 0; i < input.files.length; i++) {
+                    const f = input.files[i];
+                    stagedCompareCiplFiles.set(f.name, f); // Deduplikasi
+                }
+            }
+            syncCompareDataTransfer('cipl');
+            const badge = document.getElementById('ciplFileBadge');
+            const label = document.getElementById('ciplFileName');
+            const count = stagedCompareCiplFiles.size;
+            if (count > 0) {
+                if (label) label.innerText = `✓ ${count} File CIPL Terpilih`;
+                if (badge) badge.style.display = 'inline-block';
+            } else {
+                if (badge) badge.style.display = 'none';
+            }
+        }
+    }
+
+    // Drag and drop for PEB & CIPL boxes
+    document.addEventListener('DOMContentLoaded', () => {
+        const pebBox = document.getElementById('pebBox');
+        if (pebBox) {
+            ['dragenter', 'dragover'].forEach(ev => pebBox.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); pebBox.classList.add('bg-light'); }));
+            ['dragleave', 'drop'].forEach(ev => pebBox.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); pebBox.classList.remove('bg-light'); }));
+            pebBox.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files) {
+                    for (let i = 0; i < dt.files.length; i++) {
+                        const f = dt.files[i];
+                        if (f.name.toLowerCase().endsWith('.pdf')) {
+                            stagedComparePebFiles.set(f.name, f);
+                        }
+                    }
+                    updateFileBadge('peb');
+                }
+            });
+        }
+
+        const ciplBox = document.getElementById('ciplBox');
+        if (ciplBox) {
+            ['dragenter', 'dragover'].forEach(ev => ciplBox.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); ciplBox.classList.add('bg-light'); }));
+            ['dragleave', 'drop'].forEach(ev => ciplBox.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); ciplBox.classList.remove('bg-light'); }));
+            ciplBox.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files) {
+                    for (let i = 0; i < dt.files.length; i++) {
+                        const f = dt.files[i];
+                        stagedCompareCiplFiles.set(f.name, f);
+                    }
+                    updateFileBadge('cipl');
+                }
+            });
+        }
+    });
+
+    /**
+     * Validasi sebelum submit dan jalankan animasi loading
+     */
+    function handleCompareSubmit(event) {
+        syncCompareDataTransfer('peb');
+        syncCompareDataTransfer('cipl');
+
+        const hasPeb = stagedComparePebFiles.size > 0;
+        const hasCipl = stagedCompareCiplFiles.size > 0;
+
+        if (!hasPeb || !hasCipl) {
+            event.preventDefault();
+            alert('Harap unggah minimal 1 file Dokumen PEB dan 1 file Dokumen CIPL sebelum menjalankan komparasi.');
+            return false;
+        }
+
+        // Jalankan Animasi Loading
+        triggerCompareProcessing();
+        return true;
+    }
+
+    /**
+     * Sembunyikan Dashboard dan Tampilkan Loading Spinner & Progress Bar
+     */
+    function triggerCompareProcessing() {
+        const dashboard = document.getElementById('dashboardView');
+        const loader = document.getElementById('compareProcessingView');
+
+        if (dashboard) dashboard.style.display = 'none';
+        if (loader) loader.style.display = 'block';
+
+        let progress = 0;
+        const pBar = document.getElementById('compareProgressBar');
+        const pText = document.getElementById('comparePercentText');
+        const statusMsg = document.getElementById('compareStatusMsg');
+        const subText = document.getElementById('compareSubtext');
+
+        const interval = setInterval(() => {
+            if (progress < 95) {
+                progress += Math.floor(Math.random() * 8) + 4;
+                if (progress > 95) progress = 95;
+
+                if (pBar) pBar.style.width = progress + '%';
+                if (pText) pText.innerText = progress + '%';
+
+                if (progress > 30 && progress <= 65) {
+                    if (statusMsg) statusMsg.innerText = 'Mencocokkan No. Pengajuan PEB dengan Invoice CIPL...';
+                    if (subText) subText.innerText = 'Analyzing Item Quantities, Bruto vs Netto & Discrepancies';
+                } else if (progress > 65) {
+                    if (statusMsg) statusMsg.innerText = 'Menyusun Laporan Database 3 Sheet...';
+                    if (subText) subText.innerText = 'Generating Sheet Header, Sheet Detail & Rekapitulasi Discrepancy';
+                }
+            } else {
+                clearInterval(interval);
+            }
+        }, 120);
+    }
+</script>
+{% endblock %}

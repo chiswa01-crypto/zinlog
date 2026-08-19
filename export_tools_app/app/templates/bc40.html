@@ -1,0 +1,484 @@
+{% extends 'base.html' %}
+
+{% block title %}Database BC 4.0 - ZINLOG Smart Logistics{% endblock %}
+
+{% block breadcrumb %}Local &gt; Database BC 4.0{% endblock %}
+{% block page_title %}Database BC 4.0 (Pabean Domestik){% endblock %}
+{% block page_subtitle %}Ekstraksi Otomatis Dokumen PDF BC 4.0 ke Format Template Excel DATABASE LOKAL BC 4.0.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Banner for Local BC 4.0 */
+    .bc40-hero-banner {
+        background: linear-gradient(135deg, #0c192e 0%, #1e293b 100%);
+        border-radius: 18px;
+        color: #ffffff;
+        padding: 1.75rem 2rem;
+        margin-bottom: 1.75rem;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 25px rgba(12, 25, 46, 0.12);
+    }
+
+    .bc40-hero-banner::after {
+        content: '';
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        width: 160px;
+        height: 160px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    /* Metric Stat Cards */
+    .stat-card-bc40 {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 1.25rem 1.4rem;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card-bc40:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(12, 25, 46, 0.08);
+    }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+    }
+
+    /* Modern Dropzone & Card Containers */
+    .scorplog-card {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+        margin-bottom: 1.75rem;
+        overflow: hidden;
+    }
+
+    .scorplog-card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fafcff;
+    }
+
+    .scorplog-card-body {
+        padding: 1.5rem;
+    }
+
+    .bc40-dropzone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        background: #f8fafc;
+        padding: 2.2rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    .bc40-dropzone:hover, .bc40-dropzone.dragover {
+        border-color: #10b981;
+        background: #f0fdf4;
+    }
+
+    .btn-action-emerald {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff;
+        font-weight: 700;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action-emerald:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO BANNER -->
+<div class="bc40-hero-banner">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge mb-2" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-weight: 700; border-radius: 20px; padding: 0.4em 1em; font-size: 0.8rem;">
+                <i class="bi bi-building-check me-1"></i> Modul Local &bull; Bea Cukai BC 4.0
+            </span>
+            <h3 class="fw-bold mb-1" style="font-family: 'Outfit', sans-serif;">Database & Pengelolaan Dokumen BC 4.0</h3>
+            <p class="text-white-50 mb-0 small" style="line-height: 1.5;">
+                Unggah dokumen PDF BC 4.0 resmi Bea Cukai untuk diekstrak secara otomatis ke dalam template tabel <strong>DATABASE LOKAL BC 4.0.xlsx</strong>.
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            {% if excel_download_url %}
+            <a href="{{ excel_download_url }}" class="btn btn-warning px-4 py-2 fw-bold text-dark shadow-sm"
+                style="background: #f97316; color: #ffffff !important; border: none; border-radius: 12px;">
+                <i class="bi bi-file-earmark-arrow-down-fill me-1 fs-5"></i> Unduh Excel BC 4.0
+            </a>
+            {% else %}
+            <button class="btn btn-action-emerald" onclick="document.getElementById('pdfFilesInput').click();">
+                <i class="bi bi-cloud-arrow-up-fill fs-5"></i>
+                <span>Unggah Dokumen PDF</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- STATS SUMMARY CARDS -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card-bc40">
+            <div class="stat-icon-wrapper" style="background: #f0fdf4; color: #10b981;">
+                <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+            </div>
+            <div>
+                <div class="text-muted small fw-semibold">Total Dokumen</div>
+                <h4 class="fw-bold text-dark mb-0">{{ total_docs }} <span class="text-muted fs-6 fw-normal">Dokumen</span></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card-bc40">
+            <div class="stat-icon-wrapper" style="background: #eff6ff; color: #3b82f6;">
+                <i class="bi bi-boxes"></i>
+            </div>
+            <div>
+                <div class="text-muted small fw-semibold">Total Item / Seri</div>
+                <h4 class="fw-bold text-dark mb-0">{{ total_items }} <span class="text-muted fs-6 fw-normal">Baris</span></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card-bc40">
+            <div class="stat-icon-wrapper" style="background: #fff7ed; color: #f97316;">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div>
+                <div class="text-muted small fw-semibold">Total Nilai Barang</div>
+                <h4 class="fw-bold text-dark mb-0">Rp {{ "{:,.4f}".format(total_nilai) }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card-bc40">
+            <div class="stat-icon-wrapper" style="background: #fdf2f8; color: #ec4899;">
+                <i class="bi bi-file-earmark-excel-fill"></i>
+            </div>
+            <div>
+                <div class="text-muted small fw-semibold">Template Target</div>
+                <h6 class="fw-bold text-success mb-0 text-truncate" style="max-width: 140px;" title="DATABASE LOKAL BC 4.0.xlsx">
+                    <i class="bi bi-check-circle-fill me-1"></i> BC 4.0 Template
+                </h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- UPLOAD SECTION -->
+<div class="scorplog-card mb-4">
+    <div class="scorplog-card-header">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-upload text-success fs-5"></i>
+            <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Outfit', sans-serif;">Form Ekstraksi Dokumen PDF BC 4.0</h5>
+        </div>
+        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700;">
+            Support Batch Multiple PDFs
+        </span>
+    </div>
+    <div class="scorplog-card-body">
+        <form action="{{ url_for('bc40.index') }}" method="POST" enctype="multipart/form-data" id="bc40UploadForm">
+            <input type="file" id="pdfFilesInput" name="pdf_files" multiple accept=".pdf" style="display: none;" onchange="handleBc40FilesSelected(this)">
+            
+            <div class="bc40-dropzone mb-3" id="dropzoneArea" onclick="document.getElementById('pdfFilesInput').click();">
+                <div class="mb-3">
+                    <div class="stat-icon-wrapper mx-auto" style="width: 54px; height: 54px; background: #ecfdf5; color: #10b981; font-size: 1.6rem; border-radius: 16px;">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">Pilih atau Seret Berkas PDF Dokumen BC 4.0 ke Sini</h5>
+                <p class="text-muted small mb-3">
+                    Dapat menambah berkas secara bertahap tanpa menghilangkan pilihan sebelumnya (Otomatis deduplikasi).
+                </p>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-success px-3 fw-bold rounded-pill">
+                        <i class="bi bi-plus-circle me-1"></i> + Pilih / Tambah Berkas PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- PREVIEW DAFTAR FILE TERPILIH (STAGED LIST) -->
+            <div id="bc40FileListPreview" class="d-none mb-3">
+                <div class="p-3 bg-light rounded-4 border shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-success rounded-pill px-3 py-2 fw-bold" id="bc40FileCountBadge">0 Berkas</span>
+                            <strong class="text-dark small" id="bc40FileCountLabel">Daftar PDF BC 4.0 Terpilih:</strong>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-success fw-semibold px-3 rounded-pill" onclick="document.getElementById('pdfFilesInput').click();">
+                                <i class="bi bi-plus-circle me-1"></i> + Tambah PDF Lagi
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="clearBc40Files();">
+                                <i class="bi bi-trash3 me-1"></i> Hapus Semua
+                            </button>
+                        </div>
+                    </div>
+                    <div class="list-group list-group-flush small" id="bc40FileListUl" style="max-height: 240px; overflow-y: auto;"></div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3" id="submitActionWrapper" style="display: none !important;">
+                <button type="button" class="btn btn-outline-secondary px-3" onclick="clearBc40Files()">Batal</button>
+                <button type="submit" class="btn btn-action-emerald px-4" id="btnSubmitExtract">
+                    <i class="bi bi-gear-wide-connected me-1"></i> Proses &amp; Ekstrak (<span id="bc40BtnDocCount">0</span> PDF) ke Excel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- RESULTS TABLE -->
+<div class="scorplog-card">
+    <div class="scorplog-card-header">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-table text-success fs-5"></i>
+            <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Outfit', sans-serif;">Pratinjau Tabel Database BC 4.0</h5>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if excel_download_url %}
+            <a href="{{ excel_download_url }}" class="btn btn-sm btn-success rounded-3 fw-bold">
+                <i class="bi bi-download me-1"></i> Download Excel (.xlsx)
+            </a>
+            {% endif %}
+            <div class="input-group input-group-sm" style="width: 240px;">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" id="tableFilterInput" class="form-control border-start-0 ps-0" placeholder="Filter hasil ekstraksi..." onkeyup="filterTable(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <div class="scorplog-card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="bc40ResultsTable" style="font-size: 0.85rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th class="py-3 px-3 text-center">NO</th>
+                        <th class="py-3 text-center">DOKUMEN</th>
+                        <th class="py-3">NOMOR AJU</th>
+                        <th class="py-3 text-center">NOMOR DAFTAR</th>
+                        <th class="py-3 text-center">TGL DAFTAR</th>
+                        <th class="py-3">PEMASOK / PENGIRIM</th>
+                        <th class="py-3 text-center">SERI</th>
+                        <th class="py-3">NAMA BARANG</th>
+                        <th class="py-3 text-center">KODE HS</th>
+                        <th class="py-3 text-end">JUMLAH</th>
+                        <th class="py-3 text-center">SATUAN</th>
+                        <th class="py-3 text-end">BRUTO (KG)</th>
+                        <th class="py-3 text-end">NETTO (KG)</th>
+                        <th class="py-3 text-end px-3">NILAI BARANG (RP)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if extracted_docs %}
+                        {% set row_counter = namespace(value=1) %}
+                        {% for doc in extracted_docs %}
+                            {% for item in doc['items'] %}
+                            <tr>
+                                <td class="text-center px-3 fw-semibold text-muted">{{ row_counter.value }}</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">{{ doc.dokumen }}</span></td>
+                                <td class="fw-mono small">{{ doc.nomor_aju or '-' }}</td>
+                                <td class="text-center font-monospace fw-bold text-primary">{{ doc.nomor_daftar or '-' }}</td>
+                                <td class="text-center">{{ doc.tanggal_daftar or '-' }}</td>
+                                <td class="fw-semibold text-dark">{{ doc.nama_pemasok or '-' }}</td>
+                                <td class="text-center">{{ item.seri }}</td>
+                                <td>{{ item.nama_barang }}</td>
+                                <td class="text-center font-monospace">{{ item.kode_hs or '-' }}</td>
+                                <td class="text-end fw-semibold">{{ "{:,.0f}".format(item.jumlah) if item.jumlah else '0' }}</td>
+                                <td class="text-center"><span class="badge bg-secondary-subtle text-secondary">{{ item.satuan }}</span></td>
+                                <td class="text-end">{{ "{:,.4f}".format(item.bruto) if item.bruto else '0.0000' }}</td>
+                                <td class="text-end">{{ "{:,.4f}".format(item.netto) if item.netto else '0.0000' }}</td>
+                                <td class="text-end px-3 fw-bold text-success">Rp {{ "{:,.4f}".format(item.nilai_barang) if item.nilai_barang else '0.0000' }}</td>
+                            </tr>
+                            {% set row_counter.value = row_counter.value + 1 %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="14" class="text-center py-5 text-muted">
+                            <div class="py-4">
+                                <i class="bi bi-file-earmark-excel fs-1 d-block mb-2 text-muted opacity-50"></i>
+                                <span class="fw-semibold fs-6">Belum ada data dokumen BC 4.0 yang dimuat.</span>
+                                <p class="small text-muted mb-0">Silakan unggah dokumen PDF BC 4.0 di atas untuk mengekstrak data ke template Excel.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const stagedBc40Files = new Map();
+
+    function syncBc40DataTransfer() {
+        const input = document.getElementById('pdfFilesInput');
+        if (!input) return;
+        try {
+            const dt = new DataTransfer();
+            stagedBc40Files.forEach(file => {
+                dt.items.add(file);
+            });
+            input.files = dt.files;
+        } catch (e) {
+            console.warn("BC40 DataTransfer sync:", e);
+        }
+    }
+
+    function renderBc40FileList() {
+        const previewDiv = document.getElementById('bc40FileListPreview');
+        const listUl = document.getElementById('bc40FileListUl');
+        const countLabel = document.getElementById('bc40FileCountLabel');
+        const countBadge = document.getElementById('bc40FileCountBadge');
+        const btnCount = document.getElementById('bc40BtnDocCount');
+        const submitWrapper = document.getElementById('submitActionWrapper');
+        
+        const count = stagedBc40Files.size;
+        if (count === 0) {
+            if (previewDiv) previewDiv.classList.add('d-none');
+            if (submitWrapper) submitWrapper.style.setProperty('display', 'none', 'important');
+            syncBc40DataTransfer();
+            return;
+        }
+
+        if (listUl) listUl.innerHTML = '';
+        if (countLabel) countLabel.innerText = `${count} Berkas PDF BC 4.0 Siap Diekstrak:`;
+        if (countBadge) countBadge.innerText = `${count} Berkas`;
+        if (btnCount) btnCount.innerText = count;
+
+        let idx = 1;
+        stagedBc40Files.forEach((file, name) => {
+            const li = document.createElement('div');
+            li.className = 'list-group-item bg-white border rounded-3 mb-2 p-2 px-3 d-flex align-items-center justify-content-between shadow-sm';
+            const sizeKb = (file.size / 1024).toFixed(1);
+
+            li.innerHTML = `
+                <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2">#${idx}</span>
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-5 flex-shrink-0"></i>
+                    <div class="text-truncate">
+                        <strong class="text-dark d-block text-truncate" title="${name}">${name}</strong>
+                        <small class="text-muted">${sizeKb} KB</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-1 px-2" title="Hapus berkas ini" onclick="removeStagedBc40File('${name.replace(/'/g, "\\'")}');">
+                    <i class="bi bi-x-lg fw-bold"></i>
+                </button>
+            `;
+            if (listUl) listUl.appendChild(li);
+            idx++;
+        });
+
+        syncBc40DataTransfer();
+        if (previewDiv) previewDiv.classList.remove('d-none');
+        if (submitWrapper) submitWrapper.style.setProperty('display', 'flex', 'important');
+    }
+
+    function handleBc40FilesSelected(input) {
+        if (!input || !input.files || input.files.length === 0) return;
+        for (let i = 0; i < input.files.length; i++) {
+            const f = input.files[i];
+            stagedBc40Files.set(f.name, f); // Deduplikasi otomatis
+        }
+        renderBc40FileList();
+    }
+
+    function removeStagedBc40File(fileName) {
+        if (stagedBc40Files.has(fileName)) {
+            stagedBc40Files.delete(fileName);
+            renderBc40FileList();
+        }
+    }
+
+    function clearBc40Files() {
+        stagedBc40Files.clear();
+        const input = document.getElementById('pdfFilesInput');
+        if (input) input.value = '';
+        renderBc40FileList();
+    }
+
+    function filterTable(query) {
+        query = query.toLowerCase();
+        const rows = document.querySelectorAll('#bc40ResultsTable tbody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    }
+
+    // Drag and drop handlers
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropzone = document.getElementById('dropzoneArea');
+        if (dropzone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    for (let i = 0; i < dt.files.length; i++) {
+                        const f = dt.files[i];
+                        if (f.name.toLowerCase().endsWith('.pdf')) {
+                            stagedBc40Files.set(f.name, f);
+                        }
+                    }
+                    renderBc40FileList();
+                }
+            }, false);
+        }
+    });
+</script>
+{% endblock %}

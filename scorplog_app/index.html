@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCORPLOG LOGISTICS - AI Compliance & Customs Automation Platform</title>
+
+    <!-- Google Fonts & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .npe-loading-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(12, 25, 46, 0.08);
+            padding: 3rem 2.5rem;
+            text-align: center;
+            max-width: 680px;
+            margin: 1.5rem auto;
+            animation: fadeInFast 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeInFast {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spinner-ring-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        .spinner-outer-ring {
+            width: 80px;
+            height: 80px;
+            border: 4px solid #ffedd5;
+            border-top: 4px solid #f97316;
+            border-right: 4px solid #ea580c;
+            border-radius: 50%;
+            animation: spinRing 0.8s linear infinite;
+            box-shadow: 0 0 18px rgba(249, 115, 22, 0.3);
+        }
+
+        .spinner-inner-icon {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #0c192e;
+            animation: pulseIcon 1.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes spinRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseIcon {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+
+        .npe-progress-container {
+            width: 100%;
+            background: #f1f5f9;
+            border-radius: 12px;
+            height: 12px;
+            overflow: hidden;
+            margin: 1.25rem 0 0.75rem 0;
+            position: relative;
+        }
+
+        .npe-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f97316 0%, #ea580c 50%, #10b981 100%);
+            border-radius: 12px;
+            transition: width 0.15s linear;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+        }
+
+        .skeleton-container {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            text-align: left;
+        }
+
+        .skeleton-row {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 0.85rem 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #e2e8f0;
+        }
+
+        .skeleton-box {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.2s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes skeletonShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================================================
+         1. LANDING VIEW / LOGIN PORTAL (#landingView) - INSTANT DEMO ACCESS
+         ========================================================================== -->
+    <div id="landingView">
+        <div class="landing-container">
+            <!-- Brand Logo & Header -->
+            <div class="brand-logo-container brand-logo-large">
+                <!-- OFFICIAL SCORPLOG LOGISTICS LOGO IMAGE -->
+                <img src="scorplog_official_logo.png" alt="SCORPLOG LOGISTICS Official Logo" class="brand-scorpion-logo-img">
+                <p class="brand-tagline-text">
+                    The ultimate tool to streamline your Export-Import workflow.<br>
+                    Let our AI instantly validate your shipping documents<br>
+                    to guarantee flawless compliance.
+                </p>
+            </div>
+
+            <!-- Instant Portal Access Card (Mode Percobaan High-Tech) -->
+            <div class="login-card">
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+                    <span class="badge" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-weight: 800; border-radius: 20px; padding: 0.45em 1.1em; font-size: 0.85rem;">
+                        <i class="bi bi-lightning-charge-fill me-1" style="color: #10b981;"></i> Demo Trial Mode Active
+                    </span>
+                </div>
+                
+                <h4 class="fw-extrabold text-dark mb-2" style="font-family: 'Outfit', sans-serif; font-size: 1.45rem;">Masuk ke Platform SCORPLOG</h4>
+                <p class="text-muted small mb-4" style="line-height: 1.55; color: #64748b;">
+                    Akses instan ke seluruh ekosistem otomasi NPE/PEB & CIPL tanpa perlunya autentikasi akun.
+                </p>
+
+                <button type="button" class="btn-launch-workspace" onclick="simulateLogin(event)">
+                    <span>Launch SCORPLOG Workspace</span>
+                    <i class="bi bi-arrow-right-circle-fill fs-5"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         2. MAIN APPLICATION WORKSPACE (#appView) - HORIZONTAL SIDEBAR LOGO
+         ========================================================================== -->
+    <div id="appView" style="display: none;">
+        <!-- Left Sidebar Navigation -->
+        <aside class="scorplog-sidebar">
+            <!-- KARTU LOGO SIDEBAR PRESISE FIT -->
+            <div class="sidebar-logo-card">
+                <img src="scorplog_logo_horizontal.png" alt="SCORPLOG LOGISTICS" class="sidebar-horizontal-logo-img">
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="#" class="sidebar-link active">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                        <span>NPE / PEB</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link">
+                        <i class="bi bi-box2-fill"></i>
+                        <span>CIPL Gen</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link">
+                        <svg class="sidebar-svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v15M7 21h10"></path>
+                            <path d="M4 7h16"></path>
+                            <circle cx="12" cy="5" r="1.2" fill="currentColor"></circle>
+                            <path d="M2.5 13.5l2.5-6 2.5 6h-5z"></path>
+                            <path d="M16.5 13.5l2.5-6 2.5 6h-5z"></path>
+                        </svg>
+                        <span>Compare</span>
+                    </a>
+                </li>
+            </ul>
+
+            <a href="#" class="sidebar-link sidebar-logout" style="color: #ef4444;" onclick="simulateLogout()">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Logout</span>
+            </a>
+        </aside>
+
+        <!-- Main Right Content Area -->
+        <main class="scorplog-content">
+            <header class="content-header">
+                <div>
+                    <h2 class="fw-bold text-dark mb-1">NPE / PEB Extraction</h2>
+                    <p class="text-muted small mb-0">Upload and manage customs clearance documents.</p>
+                </div>
+                <div style="width: 42px; height: 42px; background: #0c192e; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-person-fill fs-5"></i>
+                </div>
+            </header>
+
+            <!-- DASHBOARD VIEW (#dashboardView) -->
+            <div id="dashboardView">
+                <div class="upload-sim-box" onclick="triggerExtraction()">
+                    <div class="upload-icon-circle">
+                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                    </div>
+                    <h5 class="upload-title">Click to Upload / Simulate PDF Extraction</h5>
+                    <p class="upload-subtitle">Will trigger AI Extraction & Logic Validation (Gemini API Engine)</p>
+                </div>
+            </div>
+
+            <!-- MODERN HIGH-SPEED LOADING VIEW (#npeProcessingView) -->
+            <div id="npeProcessingView" style="display: none;">
+                <div class="npe-loading-card">
+                    <div class="spinner-ring-wrapper">
+                        <div class="spinner-outer-ring"></div>
+                        <i class="bi bi-cpu-fill spinner-inner-icon"></i>
+                    </div>
+
+                    <h4 class="npe-status-text" id="npeStatusMsg">Mengekstrak Data PDF NPE / PEB...</h4>
+                    <p class="npe-subtext" id="npeSubtext">Running Gemini AI Extraction & Rule Validation Engine</p>
+
+                    <div class="npe-progress-container">
+                        <div class="npe-progress-bar" id="npeProgressBar"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; color: #64748b; font-size: 0.9rem;">
+                        <span>Status: Active Processing</span>
+                        <span id="npePercentText">0%</span>
+                    </div>
+
+                    <div class="skeleton-container">
+                        <div class="skeleton-row">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                                <div class="skeleton-box" style="width: 140px; height: 16px;"></div>
+                            </div>
+                            <div class="skeleton-box" style="width: 90px; height: 16px;"></div>
+                            <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+                        </div>
+                        <div class="skeleton-row">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                                <div class="skeleton-box" style="width: 180px; height: 16px;"></div>
+                            </div>
+                            <div class="skeleton-box" style="width: 100px; height: 16px;"></div>
+                            <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- External Script -->
+    <script src="script.js"></script>
+</body>
+</html>

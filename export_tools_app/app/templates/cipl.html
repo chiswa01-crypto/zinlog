@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+
+{% block title %}CIPL Generation - ZINLOG Smart Logistics{% endblock %}
+
+{% block breadcrumb %}Export &gt; CIPL Generation{% endblock %}
+{% block page_title %}CIPL Generation & Batch Processing{% endblock %}
+{% block page_subtitle %}Upload and manage Commercial Invoice & Packing List documents.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       SCORPLOG MODULAR UI: ULTRA-FAST MODERN LOADING & SKELETON ANIMATIONS (CIPL)
+       ========================================================================== */
+    .cipl-loading-card {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(12, 25, 46, 0.08);
+        padding: 3rem 2.5rem;
+        text-align: center;
+        max-width: 680px;
+        margin: 1.5rem auto;
+        animation: fadeInFast 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes fadeInFast {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Dual-Ring Glowing Spinner (CIPL Emerald Green Glow) */
+    .spinner-ring-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem auto;
+    }
+
+    .spinner-outer-ring {
+        width: 80px;
+        height: 80px;
+        border: 4px solid #d1fae5;
+        border-top: 4px solid #10b981;
+        border-right: 4px solid #059669;
+        border-radius: 50%;
+        animation: spinRing 0.8s linear infinite;
+        box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
+    }
+
+    .spinner-inner-icon {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        color: #0c192e;
+        animation: pulseIcon 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes spinRing {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseIcon {
+        0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.8; }
+        100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    }
+
+    /* Progress Bar Emerald */
+    .cipl-progress-container {
+        width: 100%;
+        background: #f1f5f9;
+        border-radius: 12px;
+        height: 12px;
+        overflow: hidden;
+        margin: 1.25rem 0 0.75rem 0;
+        position: relative;
+    }
+
+    .cipl-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%);
+        border-radius: 12px;
+        transition: width 0.15s linear;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+
+    .cipl-status-text {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0c192e;
+        margin-bottom: 0.35rem;
+    }
+
+    .cipl-subtext {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Skeleton Loading Rows Simulation */
+    .skeleton-container {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: left;
+    }
+
+    .skeleton-row {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 0.85rem 1.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #e2e8f0;
+    }
+
+    .skeleton-box {
+        background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+        background-size: 200% 100%;
+        animation: skeletonShimmer 1.2s infinite;
+        border-radius: 6px;
+    }
+
+    @keyframes skeletonShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- PROCESSED RESULT / DOWNLOAD LINK (JIKA FILE SELESAI DIPROSES) -->
+{% if processed_data and processed_data.excel_filename %}
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 20px; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1.5px solid #a7f3d0 !important;">
+    <div class="card-body p-4 text-center">
+        <div class="mb-2 text-success">
+            <i class="bi bi-check-circle-fill" style="font-size: 3.2rem;"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">Pengolahan Dokumen CIPL Selesai!</h3>
+        <p class="text-secondary mb-3 fs-6">
+            File CIPL telah diekstrak dan disusun 100% presisi ke dalam templat Excel 20 Kolom.
+        </p>
+        <a href="{{ url_for('npe_peb.download_file', filename=processed_data.excel_filename) }}" 
+           class="btn btn-success btn-lg px-5 py-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-white"
+           style="border-radius: 14px; background: #10b981; border: none;">
+            <i class="bi bi-file-earmark-excel-fill fs-4"></i>
+            <span>Download Hasil Excel CIPL (.xlsx)</span>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- UPLOAD VIEW -->
+<div id="dashboardView">
+    <!-- Form Upload CIPL Files Box -->
+    <form action="{{ url_for('cipl.index') }}" method="POST" enctype="multipart/form-data" id="ciplUploadForm">
+        <div class="upload-sim-box" id="ciplUploadBox" onclick="document.getElementById('ciplFiles').click();">
+            <div class="upload-icon-circle" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 22px rgba(16, 185, 129, 0.4);">
+                <i class="bi bi-file-earmark-excel-fill"></i>
+            </div>
+            <h5 class="upload-title">Klik atau Tarik Berkas CIPL (PDF / Excel) ke Sini</h5>
+            <p class="upload-subtitle">Mendukung unggah satu atau banyak berkas CIPL secara bertahap</p>
+            <span class="badge bg-success px-3 py-2 rounded-pill fw-semibold mt-2">
+                <i class="bi bi-plus-circle me-1"></i> Pilih / Tambah Berkas CIPL
+            </span>
+            <input class="d-none" type="file" id="ciplFiles" name="files" accept=".pdf, .xlsx, .xls" multiple onchange="handleCiplFilesSelected(this);">
+        </div>
+
+        <div id="ciplFileListPreview" class="d-none mb-4 mt-3">
+            <div class="p-3 bg-white rounded-4 border shadow-sm" style="max-width: 680px; margin: 0 auto;">
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success rounded-pill px-3 py-2 fw-bold" id="ciplFileCountBadge">0 Berkas</span>
+                        <strong class="text-dark small" id="ciplFileCountLabel">Daftar CIPL Terpilih:</strong>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-success fw-semibold px-3 rounded-pill" onclick="document.getElementById('ciplFiles').click();">
+                            <i class="bi bi-plus-circle me-1"></i> + Tambah Berkas Lagi
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="clearCiplFiles();">
+                            <i class="bi bi-trash3 me-1"></i> Hapus Semua
+                        </button>
+                    </div>
+                </div>
+                <div class="list-group list-group-flush small" id="ciplFileListUl" style="max-height: 240px; overflow-y: auto;"></div>
+                
+                <div class="text-center pt-3 border-top mt-2">
+                    <button type="button" id="btnSubmitCipl" class="btn btn-success btn-lg px-5 py-3 fw-bold rounded-4 shadow-sm w-100" onclick="triggerCiplProcessing();">
+                        <i class="bi bi-gear-fill me-2"></i> Ekstrak &amp; Buat CIPL (<span id="ciplBtnCount">0</span> Berkas)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- MODERN HIGH-SPEED LOADING & SKELETON VIEW (CIPL) -->
+<div id="ciplProcessingView" style="display: none;">
+    <div class="cipl-loading-card">
+        <div class="spinner-ring-wrapper">
+            <div class="spinner-outer-ring"></div>
+            <i class="bi bi-file-earmark-excel-fill spinner-inner-icon text-success"></i>
+        </div>
+
+        <h4 class="cipl-status-text" id="ciplStatusMsg">Mengekstrak Data Dokumen CIPL...</h4>
+        <p class="cipl-subtext" id="ciplSubtext">Running Gemini AI Extraction & 20-Column Table Processing Engine</p>
+
+        <!-- Dynamic Progress Bar -->
+        <div class="cipl-progress-container">
+            <div class="cipl-progress-bar" id="ciplProgressBar"></div>
+        </div>
+        <div class="d-flex justify-content-between fs-6 fw-bold text-secondary">
+            <span>Status: Active Processing</span>
+            <span id="ciplPercentText">0%</span>
+        </div>
+
+        <!-- Skeleton Row Preview Animation -->
+        <div class="skeleton-container">
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 150px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 90px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 180px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 100px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+            <div class="skeleton-row">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="skeleton-box" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+                    <div class="skeleton-box" style="width: 130px; height: 16px;"></div>
+                </div>
+                <div class="skeleton-box" style="width: 80px; height: 16px;"></div>
+                <div class="skeleton-box" style="width: 70px; height: 16px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const stagedCiplGenFiles = new Map();
+
+    function syncCiplGenDataTransfer() {
+        const input = document.getElementById('ciplFiles');
+        if (!input) return;
+        try {
+            const dt = new DataTransfer();
+            stagedCiplGenFiles.forEach(file => {
+                dt.items.add(file);
+            });
+            input.files = dt.files;
+        } catch (e) {
+            console.warn("CIPL DataTransfer sync:", e);
+        }
+    }
+
+    function renderCiplGenFileList() {
+        const previewDiv = document.getElementById('ciplFileListPreview');
+        const listUl = document.getElementById('ciplFileListUl');
+        const countLabel = document.getElementById('ciplFileCountLabel');
+        const countBadge = document.getElementById('ciplFileCountBadge');
+        const btnCount = document.getElementById('ciplBtnCount');
+        
+        const count = stagedCiplGenFiles.size;
+        if (count === 0) {
+            if (previewDiv) previewDiv.classList.add('d-none');
+            syncCiplGenDataTransfer();
+            return;
+        }
+
+        if (listUl) listUl.innerHTML = '';
+        if (countLabel) countLabel.innerText = `${count} Berkas CIPL Siap Diekstrak:`;
+        if (countBadge) countBadge.innerText = `${count} Berkas`;
+        if (btnCount) btnCount.innerText = count;
+
+        let idx = 1;
+        stagedCiplGenFiles.forEach((file, name) => {
+            const li = document.createElement('div');
+            li.className = 'list-group-item bg-light border rounded-3 mb-2 p-2 px-3 d-flex align-items-center justify-content-between';
+            const isPdf = name.toLowerCase().endsWith('.pdf');
+            const iconClass = isPdf ? 'bi-file-earmark-pdf-fill text-danger' : 'bi-file-earmark-excel-fill text-success';
+            const sizeKb = (file.size / 1024).toFixed(1);
+
+            li.innerHTML = `
+                <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2">#${idx}</span>
+                    <i class="bi ${iconClass} fs-5 flex-shrink-0"></i>
+                    <div class="text-truncate">
+                        <strong class="text-dark d-block text-truncate" title="${name}">${name}</strong>
+                        <small class="text-muted">${sizeKb} KB</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-1 px-2" title="Hapus berkas ini" onclick="removeStagedCiplGenFile('${name.replace(/'/g, "\\'")}');">
+                    <i class="bi bi-x-lg fw-bold"></i>
+                </button>
+            `;
+            if (listUl) listUl.appendChild(li);
+            idx++;
+        });
+
+        syncCiplGenDataTransfer();
+        if (previewDiv) previewDiv.classList.remove('d-none');
+    }
+
+    function handleCiplFilesSelected(input) {
+        if (!input || !input.files || input.files.length === 0) return;
+        for (let i = 0; i < input.files.length; i++) {
+            const f = input.files[i];
+            stagedCiplGenFiles.set(f.name, f); // Deduplikasi otomatis
+        }
+        renderCiplGenFileList();
+    }
+
+    function removeStagedCiplGenFile(fileName) {
+        if (stagedCiplGenFiles.has(fileName)) {
+            stagedCiplGenFiles.delete(fileName);
+            renderCiplGenFileList();
+        }
+    }
+
+    function clearCiplFiles() {
+        stagedCiplGenFiles.clear();
+        const input = document.getElementById('ciplFiles');
+        if (input) input.value = '';
+        renderCiplGenFileList();
+    }
+
+    // Drag and Drop Handling
+    document.addEventListener('DOMContentLoaded', () => {
+        const box = document.getElementById('ciplUploadBox');
+        if (box) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                box.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    box.classList.add('border-success', 'bg-light');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                box.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    box.classList.remove('border-success', 'bg-light');
+                }, false);
+            });
+
+            box.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    for (let i = 0; i < dt.files.length; i++) {
+                        const f = dt.files[i];
+                        stagedCiplGenFiles.set(f.name, f);
+                    }
+                    renderCiplGenFileList();
+                }
+            }, false);
+        }
+    });
+
+    /**
+     * Trigger Responsif & Instan: Sembunyikan Upload Box dan Tampilkan Animasi Loading CIPL
+     */
+    function triggerCiplProcessing() {
+        const dashboard = document.getElementById('dashboardView');
+        const loader = document.getElementById('ciplProcessingView');
+        const form = document.getElementById('ciplUploadForm');
+
+        syncCiplGenDataTransfer();
+        if (stagedCiplGenFiles.size === 0) return;
+
+        // 1. Sembunyikan Upload Box UI secara instan
+        if (dashboard) dashboard.style.display = 'none';
+
+        // 2. Munculkan Animasi Loading Modern CIPL
+        if (loader) loader.style.display = 'block';
+
+        // 3. Jalankan Progress Bar & Dynamic Status Messages
+        let progress = 0;
+        const pBar = document.getElementById('ciplProgressBar');
+        const pText = document.getElementById('ciplPercentText');
+        const statusMsg = document.getElementById('ciplStatusMsg');
+        const subText = document.getElementById('ciplSubtext');
+
+        const interval = setInterval(() => {
+            if (progress < 95) {
+                progress += Math.floor(Math.random() * 8) + 4;
+                if (progress > 95) progress = 95;
+
+                if (pBar) pBar.style.width = progress + '%';
+                if (pText) pText.innerText = progress + '%';
+
+                if (progress > 30 && progress <= 65) {
+                    if (statusMsg) statusMsg.innerText = 'Mengekstrak SKU, Deskripsi Barang, Qty & Price...';
+                    if (subText) subText.innerText = 'Parsing Commercial Invoice Line Items & Consignee Data';
+                } else if (progress > 65) {
+                    if (statusMsg) statusMsg.innerText = 'Menyusun Templat Excel CIPL 20 Kolom...';
+                    if (subText) subText.innerText = 'Calculating Totals, Netto/Bruto & Packing Lists';
+                }
+            } else {
+                clearInterval(interval);
+            }
+        }, 120);
+
+        // 4. Submit form secara instan
+        setTimeout(() => {
+            form.submit();
+        }, 80);
+    }
+</script>
+{% endblock %}

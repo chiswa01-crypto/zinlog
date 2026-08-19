@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 110" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dfbc7a" />
+      <stop offset="50%" stop-color="#f5d799" />
+      <stop offset="100%" stop-color="#b88b4a" />
+    </linearGradient>
+    <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="50%" stop-color="#cbd5e1" />
+      <stop offset="100%" stop-color="#64748b" />
+    </linearGradient>
+    <linearGradient id="emeraldDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a2318" />
+      <stop offset="100%" stop-color="#061710" />
+    </linearGradient>
+    <linearGradient id="sageText" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#164e32" />
+      <stop offset="100%" stop-color="#0d2818" />
+    </linearGradient>
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- ICON EMBLEM -->
+  <g transform="translate(10, 5)">
+    <!-- Outer Mandala Circle Pattern -->
+    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#goldGrad)" stroke-width="1.2" opacity="0.6"/>
+    <circle cx="50" cy="50" r="38" fill="none" stroke="url(#goldGrad)" stroke-width="0.9" opacity="0.45"/>
+    <!-- Mandala Petals -->
+    <g stroke="url(#goldGrad)" stroke-width="1" fill="none" opacity="0.55">
+      <path d="M50,8 C62,25 62,75 50,92 C38,75 38,25 50,8 Z"/>
+      <path d="M8,50 C25,62 75,62 92,50 C75,38 25,38 8,50 Z"/>
+      <path d="M20,20 C42,32 68,68 80,80 C68,68 32,42 20,20 Z"/>
+      <path d="M80,20 C68,42 32,68 20,80 C32,68 68,32 80,20 Z"/>
+    </g>
+
+    <!-- Stylized Metallic 'Z' Symbol -->
+    <!-- Top horizontal bar -->
+    <path d="M28,30 L74,30 C76,30 78,32 76,34 L40,70 L72,70 C74,70 75,72 73,74 L26,74 C24,74 23,72 25,70 L60,34 L28,34 C26,34 26,30 28,30 Z" 
+          fill="url(#silverGrad)" filter="url(#subtleGlow)" stroke="#0d2818" stroke-width="0.8"/>
+    <path d="M30,32 L72,32 L36,68 L70,68" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.8"/>
+
+    <!-- Package / Box in center -->
+    <g transform="translate(24, 38)">
+      <polygon points="12,0 24,6 12,12 0,6" fill="#c49a6c" stroke="#8a6336" stroke-width="0.8"/>
+      <polygon points="0,6 12,12 12,24 0,18" fill="#a87f52" stroke="#8a6336" stroke-width="0.8"/>
+      <polygon points="12,12 24,6 24,18 12,24" fill="#b88c5d" stroke="#8a6336" stroke-width="0.8"/>
+      <!-- Seal -->
+      <circle cx="6" cy="15" r="3.2" fill="#80b996" stroke="#4d7c60" stroke-width="0.6"/>
+      <text x="6" y="16.5" font-family="'Plus Jakarta Sans', Arial" font-size="3.5" font-weight="900" fill="#ffffff" text-anchor="middle">z</text>
+    </g>
+
+    <!-- Upward Golden Trade Arrow -->
+    <path d="M58,68 Q68,54 75,42 L79,48 L78,36 L66,37 L71,42 Q64,52 56,66 Z" 
+          fill="url(#goldGrad)" filter="url(#subtleGlow)"/>
+  </g>
+
+  <!-- TEXT TYPOGRAPHY -->
+  <g transform="translate(125, 20)">
+    <!-- Brand Wordmark -->
+    <text x="0" y="46" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-size="52" font-weight="900" 
+          letter-spacing="2.5" fill="#0d2818">ZINLOG</text>
+    
+    <!-- Slogan / Subtitle -->
+    <text x="2" y="70" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-size="11.5" font-weight="700" 
+          letter-spacing="3.2" fill="#2d6a4f">SMART LOGISTICS FOR GLOBAL TRADE</text>
+  </g>
+</svg>

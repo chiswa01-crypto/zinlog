@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ZINLOG Smart Logistics</title>
+
+    <!-- Google Fonts & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CDN CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #071a12 0%, #0d2818 50%, #081c13 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.12) 0%, rgba(5, 23, 16, 0.7) 100%);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1;
+        }
+
+        .landing-container {
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .brand-logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 0.85rem;
+        }
+
+        .brand-transparent-logo-img {
+            max-width: 165px;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 0.35rem auto;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 20px rgba(52, 211, 153, 0.25));
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .brand-transparent-logo-img:hover {
+            transform: scale(1.03);
+        }
+
+        .brand-tagline-text {
+            color: #d1fae5;
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1.45;
+            margin-bottom: 0.85rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+        }
+
+        /* CARD LOGIN LEBIH KOMPAK & SEIMBANG */
+        .login-card {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 1.5rem 1.75rem 1.25rem 1.75rem;
+            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.65);
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            animation: cardFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardFadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            font-weight: 700;
+            border-radius: 20px;
+            padding: 0.3rem 0.9rem;
+            font-size: 0.78rem;
+            margin-bottom: 1.15rem;
+        }
+
+        /* INPUT GROUPS */
+        .custom-input-group {
+            position: relative;
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-left {
+            position: absolute;
+            left: 0.95rem;
+            color: #64748b;
+            font-size: 1.05rem;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-form-control {
+            width: 100%;
+            padding: 0.68rem 0.85rem 0.68rem 2.6rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e293b;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .custom-form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+        }
+
+        .custom-form-control::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        /* Lupa kata sandi inline */
+        .password-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.15rem;
+        }
+
+        .password-input-wrapper .custom-input-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .link-forgot-password {
+            color: #0f3824;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: underline;
+            white-space: nowrap;
+            transition: color 0.2s ease;
+        }
+
+        .link-forgot-password:hover {
+            color: #10b981;
+        }
+
+        /* SUBMIT BUTTON */
+        .btn-submit-masuk {
+            background: #0d2818;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(13, 40, 24, 0.35);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-submit-masuk:hover {
+            background: #15462c;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(13, 40, 24, 0.45);
+        }
+
+        .btn-submit-masuk:active {
+            transform: translateY(0);
+        }
+
+        /* CARD FOOTER */
+        .card-footer-divider {
+            margin-top: 1.1rem;
+            padding-top: 0.9rem;
+            border-top: 1px solid #f1f5f9;
+            font-size: 0.825rem;
+            color: #475569;
+        }
+
+        .link-daftar-disini {
+            color: #0f3824;
+            font-weight: 800;
+            text-decoration: underline;
+            margin-left: 0.25rem;
+            transition: color 0.2s ease;
+        }
+
+        .link-daftar-disini:hover {
+            color: #10b981;
+        }
+
+        .alert-custom {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="landing-container">
+        <!-- Brand Logo & Header -->
+        <div class="brand-logo-container">
+            <img src="{{ url_for('static', filename='images/zinlog_logo_no_bg.png') }}?v=20260816_v3"
+                alt="ZINLOG - Smart Logistics for Global Trade" class="brand-transparent-logo-img">
+            <p class="brand-tagline-text">
+                Faster Customs Management, Zero Data Errors.<br>
+                Simplify your customs logistics workflow with Zinlog.
+            </p>
+        </div>
+
+        <!-- Login Card Mockup -->
+        <div class="login-card">
+            <!-- Badge -->
+            <div class="d-flex justify-content-center">
+                <div class="status-badge-pill">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Production Workspace Ready</span>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-custom alert-dismissible fade show"
+                role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <!-- Login Form -->
+            <form action="{{ url_for('auth.login', next=request.args.get('next')) }}" method="POST">
+                <!-- Input 1: Email / Username -->
+                <div class="custom-input-group">
+                    <span class="input-icon-left">
+                        <i class="bi bi-person"></i>
+                    </span>
+                    <input type="text" name="identifier" class="custom-form-control" placeholder="Email / Username"
+                        value="{{ identifier or 'admin' }}" required autofocus>
+                </div>
+
+                <!-- Input 2: Kata Sandi + Lupa Kata Sandi -->
+                <div class="password-input-wrapper">
+                    <div class="custom-input-group">
+                        <span class="input-icon-left">
+                            <i class="bi bi-lock"></i>
+                        </span>
+                        <input type="password" name="password" class="custom-form-control" placeholder="Kata Sandi"
+                            value="1111" required>
+                    </div>
+                    <a href="{{ url_for('auth.forgot_password') }}" class="link-forgot-password">Lupa Kata Sandi?</a>
+                </div>
+
+                <!-- Submit Button: Masuk -> -->
+                <button type="submit" class="btn-submit-masuk">
+                    <span>Masuk</span>
+                    <i class="bi bi-arrow-right-circle fs-5"></i>
+                </button>
+            </form>
+
+            <!-- Footer: Belum memiliki akun? Daftar Disini -->
+            <div class="card-footer-divider">
+                <span>Belum memiliki akun?</span>
+                <a href="{{ url_for('auth.register') }}" class="link-daftar-disini">Daftar Disini</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

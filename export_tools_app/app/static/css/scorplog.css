@@ -1,0 +1,297 @@
+/* ==========================================================================
+   SCORPLOG LOGISTICS - Official Logo & Master Styling (PERFECT COMPACT SIZING)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --scorplog-navy: #0c192e;
+    --scorplog-orange: #f97316;
+    --scorplog-bg: #f8fafc;
+    --scorplog-border: #e2e8f0;
+    --scorplog-text-dark: #0f172a;
+    --scorplog-text-muted: #64748b;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--scorplog-bg);
+    color: var(--scorplog-text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* LANDING VIEW (#landingView) */
+#landingView {
+    min-height: 100vh;
+    width: 100%;
+    background: url('../images/scorplog_bg.jpg') center center / cover no-repeat fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+}
+
+#landingView::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(2px);
+    z-index: 1;
+}
+
+.landing-container {
+    max-width: 620px;
+    width: 100%;
+    text-align: center;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.brand-logo-container,
+.brand-logo-large {
+    margin-bottom: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: transparent !important;
+}
+
+.brand-scorpion-logo-img,
+.brand-logo-large img {
+    max-width: 240px !important;
+    height: auto !important;
+    object-fit: contain !important;
+    background: transparent !important;
+    border: none !important;
+    filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.95)) drop-shadow(0 8px 24px rgba(12, 25, 46, 0.35)) !important;
+    margin-bottom: 0.75rem !important;
+    transition: transform 0.3s ease;
+}
+
+.brand-scorpion-logo-img:hover {
+    transform: scale(1.03);
+}
+
+.brand-tagline-text {
+    color: #0c192e;
+    font-size: 0.975rem;
+    font-weight: 700;
+    line-height: 1.6;
+    max-width: 540px;
+    margin: 0.5rem auto 0 auto;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.95), 0 0 12px rgba(255, 255, 255, 0.8);
+}
+
+/* INSTANT ACCESS LAUNCH CARD (MODE PERCOBAAN TANPA FORM AKUN) */
+.login-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 2.25rem 2.25rem;
+    box-shadow: 0 20px 45px rgba(12, 25, 46, 0.18);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.btn-launch-workspace {
+    width: 100%;
+    background: linear-gradient(135deg, #0c192e 0%, #1e293b 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 1.05rem 1.75rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    box-shadow: 0 10px 25px rgba(12, 25, 46, 0.3);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-launch-workspace:hover {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    box-shadow: 0 12px 28px rgba(249, 115, 22, 0.45);
+    transform: translateY(-2px);
+}
+
+/* SIDEBAR HEADER CARD (#appView) */
+#appView {
+    display: flex;
+    min-height: 100vh;
+}
+
+.scorplog-sidebar {
+    width: 260px;
+    background: #0c192e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    padding: 1.5rem 1rem;
+}
+
+.sidebar-logo-card {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    padding: 0.65rem 0.85rem !important;
+    margin-bottom: 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.sidebar-horizontal-logo-img,
+.sidebar-logo-card img {
+    width: auto !important;
+    max-width: 92% !important;
+    height: 34px !important;
+    max-height: 34px !important;
+    object-fit: contain !important;
+    display: block !important;
+    margin: 0 auto !important;
+}
+
+.sidebar-menu {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    flex-grow: 1;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.9rem 1.15rem;
+    border-radius: 14px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.sidebar-link i,
+.sidebar-svg-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.sidebar-link.active {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4) !important;
+    font-weight: 700 !important;
+}
+
+/* Main Content Right Wrapper dengan Background FULL HD Asli Pilihan User */
+.scorplog-content {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 2rem 2.75rem;
+    width: calc(100% - 260px);
+    background-color: #f8fafc;
+    background-image: url('../images/scorplog_tools_bg.jpg') !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+}
+
+.content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2.25rem;
+}
+
+.header-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #0c192e;
+}
+
+.header-subtitle {
+    font-size: 0.925rem;
+    color: #64748b;
+}
+
+/* UPLOAD AREA SINKRON 100% TANPA ANOMALI TRANSISI VISUAL */
+.upload-sim-box {
+    border: 2px dashed #f97316 !important;
+    border-radius: 20px !important;
+    padding: 3.25rem 2rem !important;
+    text-align: center !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(8px) !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06) !important;
+    margin-bottom: 2.5rem !important;
+    position: relative !important;
+}
+
+.upload-sim-box:hover {
+    background: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12) !important;
+}
+
+.upload-icon-circle {
+    width: 72px !important;
+    height: 72px !important;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 1.15rem auto !important;
+    color: #ffffff !important;
+    font-size: 2.25rem !important;
+    box-shadow: 0 8px 22px rgba(249, 115, 22, 0.4) !important;
+}
+
+.upload-title {
+    font-size: 1.3rem !important;
+    font-weight: 800 !important;
+    color: #0c192e !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.upload-subtitle {
+    font-size: 0.9rem !important;
+    color: #64748b !important;
+}

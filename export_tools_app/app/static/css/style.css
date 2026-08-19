@@ -1,0 +1,497 @@
+/* ==========================================================================
+   SCORPLOG LOGISTICS - Master Unified Theme Styling for All Modules
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --scorplog-navy: #0c192e;
+    --scorplog-sidebar-bg: #0c192e;
+    --scorplog-orange: #f97316;
+    --scorplog-orange-hover: #ea580c;
+    --scorplog-bg: #f8fafc;
+    --scorplog-card-bg: #ffffff;
+    --scorplog-border: #e2e8f0;
+    --scorplog-text-dark: #0f172a;
+    --scorplog-text-muted: #64748b;
+    --scorplog-red: #ef4444;
+    --scorplog-green: #10b981;
+    --scorplog-amber: #f59e0b;
+    --scorplog-shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.04);
+    --scorplog-shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+    --scorplog-shadow-lg: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--scorplog-bg);
+    color: var(--scorplog-text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* LANDING VIEW (#landingView) */
+#landingView {
+    min-height: 100vh;
+    width: 100%;
+    background: url('../images/scorplog_bg.jpg') center center / cover no-repeat fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+}
+
+#landingView::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(12, 25, 46, 0.45) 0%, rgba(15, 23, 42, 0.6) 100%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1;
+}
+
+.landing-container {
+    max-width: 620px;
+    width: 100%;
+    text-align: center;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.brand-logo-container {
+    margin-bottom: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.brand-scorpion-logo-img {
+    max-width: 240px !important;
+    height: auto !important;
+    object-fit: contain !important;
+    background: transparent !important;
+    border: none !important;
+    filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.95)) drop-shadow(0 8px 24px rgba(12, 25, 46, 0.35)) !important;
+    margin-bottom: 0.75rem !important;
+    transition: transform 0.3s ease;
+}
+
+.brand-scorpion-logo-img:hover {
+    transform: scale(1.03);
+}
+
+.brand-tagline-text {
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.6;
+    max-width: 560px;
+    margin: 0.5rem auto 1.5rem auto;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* INSTANT ACCESS LAUNCH CARD (MODE PERCOBAAN TANPA FORM INPUT AKUN) */
+.login-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 2.25rem 2.25rem;
+    box-shadow: 0 20px 45px rgba(12, 25, 46, 0.18);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.btn-launch-workspace {
+    width: 100%;
+    background: linear-gradient(135deg, #0c192e 0%, #1e293b 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 1.05rem 1.75rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    box-shadow: 0 10px 25px rgba(12, 25, 46, 0.3);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-launch-workspace:hover {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    box-shadow: 0 12px 28px rgba(249, 115, 22, 0.45);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   2. MAIN APPLICATION WORKSPACE SIDEBAR & HEADER (#appView)
+   ========================================================================== */
+#appView {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* SCORPLOG Left Sidebar */
+.scorplog-sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #071a12 0%, #0a2419 60%, #05150e 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 1000;
+    padding: 1.25rem 1rem;
+    border-right: 1px solid rgba(52, 211, 153, 0.12);
+}
+
+/* Kartu Logo Sidebar ZINLOG Presisi & Elegan */
+.sidebar-logo-card {
+    background: #03100a !important;
+    border-radius: 16px !important;
+    padding: 4px !important;
+    margin-bottom: 1.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+    border: 1px solid rgba(52, 211, 153, 0.28) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+}
+
+.sidebar-logo-card:hover {
+    border-color: rgba(52, 211, 153, 0.5) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 15px rgba(52, 211, 153, 0.15) !important;
+}
+
+.sidebar-horizontal-logo-img,
+.sidebar-logo-card img {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 62px !important;
+    border-radius: 12px !important;
+    object-fit: cover !important;
+    display: block !important;
+    margin: 0 auto !important;
+}
+
+/* SIDEBAR GROUP TITLE */
+.sidebar-group-title {
+    font-size: 0.725rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6ee7b7;
+    opacity: 0.7;
+    margin: 0.25rem 0.5rem 0.75rem 0.5rem;
+}
+
+/* SIDEBAR ACCORDION NAV */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex-grow: 1;
+}
+
+.nav-item-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    color: #cbd5e1;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.nav-header:hover {
+    color: #ffffff;
+    background: rgba(52, 211, 153, 0.1);
+}
+
+.nav-header.active-header {
+    color: #6ee7b7 !important;
+}
+
+.nav-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nav-header-left i {
+    font-size: 1.15rem;
+}
+
+.nav-chevron {
+    font-size: 0.8rem;
+    color: #64748b;
+    transition: transform 0.25s ease;
+}
+
+.nav-item-group.open .nav-chevron {
+    transform: rotate(180deg);
+    color: #ffffff;
+}
+
+/* BADGES */
+.nav-badge {
+    font-size: 0.625rem;
+    font-weight: 800;
+    padding: 0.15rem 0.45rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: 0.35rem;
+}
+
+.badge-beta {
+    background: rgba(249, 115, 22, 0.18);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.35);
+}
+
+.badge-soon {
+    background: rgba(148, 163, 184, 0.18);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.badge-locked {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+/* SUBMENU LINKS */
+.nav-submenu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding-left: 1.25rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.35rem;
+}
+
+.submenu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.submenu-link i,
+.submenu-link svg {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.icon-orange {
+    color: #f97316 !important;
+}
+
+.submenu-link:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.submenu-link.submenu-locked {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.submenu-link.submenu-locked:hover {
+    color: #94a3b8 !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* ACTIVE SUBMENU LINK WITH EMERALD GREEN INDICATOR */
+.submenu-link.active {
+    color: #34d399 !important;
+    font-weight: 700 !important;
+    background: rgba(16, 185, 129, 0.12) !important;
+}
+
+.submenu-link.active::before {
+    content: '';
+    position: absolute;
+    left: -0.65rem;
+    top: 15%;
+    bottom: 15%;
+    width: 3.5px;
+    background: #10b981;
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
+
+/* LOGOUT BUTTON AT BOTTOM */
+.sidebar-btn-logout {
+    margin-top: auto;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-align: center;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+    display: block;
+    transition: all 0.2s ease;
+}
+
+.sidebar-btn-logout:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
+}
+
+.sidebar-btn-logout:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(249, 115, 22, 0.45);
+}
+
+/* BREADCRUMB TRAIL */
+.breadcrumb-trail {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 0.35rem;
+}
+
+/* Main Content Right Wrapper dengan Background FULL HD Asli Pilihan User */
+.scorplog-content {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 2rem 2.75rem;
+    width: calc(100% - 260px);
+    background-color: #f8fafc;
+    background-image: url('../images/scorplog_tools_bg.jpg') !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+}
+
+/* Header User Profile Bar */
+.content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2.25rem;
+}
+
+.header-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #0c192e;
+}
+
+.header-subtitle {
+    font-size: 0.925rem;
+    color: #64748b;
+}
+
+.user-avatar-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #0c192e;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(12, 25, 46, 0.2);
+}
+
+/* UPLOAD AREA & DASHBOARD VIEW (#dashboardView) */
+.upload-sim-box {
+    border: 2px dashed #f97316 !important;
+    border-radius: 20px !important;
+    padding: 3.25rem 2rem !important;
+    text-align: center !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(8px) !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06) !important;
+    margin-bottom: 2.5rem !important;
+    position: relative !important;
+}
+
+.upload-sim-box:hover {
+    background: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12) !important;
+}
+
+.upload-icon-circle {
+    width: 72px !important;
+    height: 72px !important;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 1.15rem auto !important;
+    color: #ffffff !important;
+    font-size: 2.25rem !important;
+    box-shadow: 0 8px 22px rgba(249, 115, 22, 0.4) !important;
+}
+
+.upload-title {
+    font-size: 1.3rem !important;
+    font-weight: 800 !important;
+    color: #0c192e !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.upload-subtitle {
+    font-size: 0.9rem !important;
+    color: #64748b !important;
+}
