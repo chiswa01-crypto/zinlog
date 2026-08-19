@@ -153,9 +153,20 @@ def generate():
             if request.form.get(f"doc_{idx}_fob"):
                 doc["total_fob"] = float(request.form.get(f"doc_{idx}_fob", doc.get("total_fob", 0.0)))
             if request.form.get(f"doc_{idx}_gw"):
-                doc["total_gw"] = float(request.form.get(f"doc_{idx}_gw", doc.get("total_gw", 0.0)))
+                gw_override = float(request.form.get(f"doc_{idx}_gw", doc.get("total_gw", 0.0)))
+                doc["total_gw"] = gw_override
+                doc["gross_weight"] = gw_override
+                doc["bruto"] = gw_override
             if request.form.get(f"doc_{idx}_nw"):
-                doc["total_nw"] = float(request.form.get(f"doc_{idx}_nw", doc.get("total_nw", 0.0)))
+                nw_override = float(request.form.get(f"doc_{idx}_nw", doc.get("total_nw", 0.0)))
+                doc["total_nw"] = nw_override
+                doc["net_weight"] = nw_override
+                doc["netto"] = nw_override
+            if request.form.get(f"doc_{idx}_volume"):
+                vol_override = float(request.form.get(f"doc_{idx}_volume", doc.get("total_volume", 0.0)))
+                doc["total_volume"] = vol_override
+                doc["volume"] = vol_override
+                doc["cbm"] = vol_override
             if request.form.get(f"doc_{idx}_qty"):
                 doc["total_qty"] = int(request.form.get(f"doc_{idx}_qty", doc.get("total_qty", 0)))
 

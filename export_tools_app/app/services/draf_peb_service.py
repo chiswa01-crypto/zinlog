@@ -101,6 +101,78 @@ def extract_iso_country(raw_country: str) -> str:
     return "US"
 
 
+def _extract_cipl_pdf_weights_and_volume(pdf_path: str) -> Dict[str, float]:
+    """
+    Ekstraksi akurat Gross Weight (Bruto), Net Weight (Netto), dan Measurement (Volume / CBM)
+    langsung dari teks dokumen PDF CIPL / Packing List.
+    """
+    gw_val = 0.0
+    nw_val = 0.0
+    cbm_val = 0.0
+
+    try:
+        import pdfplumber
+        with pdfplumber.open(pdf_path) as pdf:
+            full_text = ""
+            for p in pdf.pages:
+                full_text += (p.extract_text() or "") + "\n"
+    except Exception:
+        full_text = ""
+
+    if not full_text:
+        try:
+            import pypdf
+            reader = pypdf.PdfReader(pdf_path)
+            for page in reader.pages:
+                full_text += (page.extract_text() or "") + "\n"
+        except Exception:
+            pass
+
+    if full_text:
+        # Pola 1: Standar Packing List (Net Weight Gross Weight Measurement \n 18,740.80 KGS 21,236.80 KGS 137.280 CBM)
+        m1 = re.search(r"Net\s+Weight\s+Gross\s+Weight\s+Measurement[\s\n]+([\d\.,]+)\s*KGS?\s+([\d\.,]+)\s*KGS?\s+([\d\.,]+)\s*CBM", full_text, re.I)
+        if m1:
+            try: nw_val = float(m1.group(1).replace(",", "").strip())
+            except ValueError: pass
+            try: gw_val = float(m1.group(2).replace(",", "").strip())
+            except ValueError: pass
+            try: cbm_val = float(m1.group(3).replace(",", "").strip())
+            except ValueError: pass
+        else:
+            # Pola 2: Format angka berdampingan KGS KGS CBM
+            m2 = re.search(r"([\d\.,]+)\s*KGS?\s+([\d\.,]+)\s*KGS?\s+([\d\.,]+)\s*CBM", full_text, re.I)
+            if m2:
+                try: nw_val = float(m2.group(1).replace(",", "").strip())
+                except ValueError: pass
+                try: gw_val = float(m2.group(2).replace(",", "").strip())
+                except ValueError: pass
+                try: cbm_val = float(m2.group(3).replace(",", "").strip())
+                except ValueError: pass
+            else:
+                # Pola 3: Pencarian Gross Weight terpisah
+                m_gw = re.search(r"Gross\s+Weight\s+Measurement[\s\n]+[\d\.,]+\s*KGS?\s+([\d\.,]+)\s*KGS?", full_text, re.I) or \
+                       re.search(r"(?:Gross\s+Weight|Total\s+Gross\s+Weight|G\.?W\.?|Bruto)[\s\n:]+([\d\.,]+)\s*KGS?", full_text, re.I) or \
+                       re.search(r"\bGW[\s\n:]+([\d\.,]+)\b", full_text, re.I)
+                if m_gw:
+                    try: gw_val = float(m_gw.group(1).replace(",", "").strip())
+                    except ValueError: pass
+
+                # Pencarian Net Weight terpisah
+                m_nw = re.search(r"(?:Net\s+Weight|Total\s+Net\s+Weight|N\.?W\.?|Netto)[\s\n:]+([\d\.,]+)\s*KGS?", full_text, re.I) or \
+                       re.search(r"\bNW[\s\n:]+([\d\.,]+)\b", full_text, re.I)
+                if m_nw:
+                    try: nw_val = float(m_nw.group(1).replace(",", "").strip())
+                    except ValueError: pass
+
+                # Pencarian Measurement / CBM terpisah
+                m_cbm = re.search(r"(?:Measurement|Volume|CBM)[\s\n:]+([\d\.,]+)\s*CBM", full_text, re.I)
+                if m_cbm:
+                    try: cbm_val = float(m_cbm.group(1).replace(",", "").strip())
+                    except ValueError: pass
+
+    return {"nw": nw_val, "gw": gw_val, "cbm": cbm_val}
+
+
 def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[str, Any]:
     """
     Mengekstrak berkas CIPL (PDF atau Excel) menjadi struktur data standar untuk Draf PEB.
@@ -110,11 +182,13 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
 
     ext = os.path.splitext(file_path)[1].lower()
     items = []
+    pdf_weights = {"nw": 0.0, "gw": 0.0, "cbm": 0.0}
 
     if ext == ".pdf":
         if not parse_cipl_pdf_to_dicts:
             raise ImportError("Parser CIPL PDF tidak tersedia.")
         items = parse_cipl_pdf_to_dicts(file_path)
+        pdf_weights = _extract_cipl_pdf_weights_and_volume(file_path)
     elif ext in [".xlsx", ".xls"]:
         items = _parse_cipl_excel(file_path)
     else:
@@ -127,12 +201,29 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
     first = items[0]
     total_qty = sum(int(i.get("qt", 0) or 0) for i in items)
     total_fob = sum(float(i.get("fob", 0.0) or 0.0) for i in items)
-    total_nw = sum(float(i.get("nw", 0.0) or 0.0) for i in items)
-    total_gw = sum(float(i.get("gw", 0.0) or 0.0) for i in items)
+    
+    # Net Weight (Netto): Prioritas dari parsing dokumen PDF atau sum item
+    total_nw = pdf_weights.get("nw", 0.0)
+    if total_nw <= 0:
+        total_nw = sum(float(i.get("nw", 0.0) or 0.0) for i in items)
 
-    # Estimasi GW jika GW 0 (biasanya GW = NW * 1.13)
-    if total_gw == 0 and total_nw > 0:
+    # Gross Weight (Bruto): Diambil dari Gross Weight packing list / dokumen CIPL
+    total_gw = pdf_weights.get("gw", 0.0)
+    if total_gw <= 0:
+        # Jika dari Excel / items
+        item_gws = [float(i.get("gw", 0.0) or 0.0) for i in items]
+        if item_gws:
+            # Jika seluruh item memiliki GW yang sama dan > 0 (header GW tersimpan per item)
+            if len(set(item_gws)) == 1 and item_gws[0] > 0:
+                total_gw = item_gws[0]
+            elif sum(item_gws) > 0:
+                total_gw = sum(item_gws)
+
+    # Fallback estimasi GW jika data GW tidak terdeteksi (GW = NW * 1.133)
+    if total_gw <= 0 and total_nw > 0:
         total_gw = round(total_nw * 1.133, 2)
+
+    total_volume = pdf_weights.get("cbm", 0.0)
 
     inv_date_raw = first.get("tgl_inv", "")
     inv_date_iso = format_iso_date(inv_date_raw, default=datetime.now().strftime("%Y-%m-%d"))
@@ -172,6 +263,13 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
         "total_fob": round(total_fob, 2),
         "total_nw": round(total_nw, 2),
         "total_gw": round(total_gw, 2),
+        "gross_weight": round(total_gw, 2),
+        "net_weight": round(total_nw, 2),
+        "bruto": round(total_gw, 2),
+        "netto": round(total_nw, 2),
+        "total_volume": round(total_volume, 3),
+        "volume": round(total_volume, 3),
+        "cbm": round(total_volume, 3),
         "items": items
     }
 
@@ -240,9 +338,9 @@ def _parse_cipl_excel(excel_path: str) -> List[Dict[str, Any]]:
             col_map["price"] = c
         elif "fob" in v or "amount" in v or "total" in v:
             col_map["fob"] = c
-        elif "nw" in v or "netto" in v:
+        elif "nw" in v or "netto" in v or "net" in v:
             col_map["nw"] = c
-        elif "gw" in v or "bruto" in v:
+        elif "gw" in v or "bruto" in v or "gross" in v:
             col_map["gw"] = c
         elif "bl" in v:
             col_map["bl"] = c
@@ -348,8 +446,9 @@ def generate_draf_peb_excel(
 
             no_aju = doc.get("nomor_aju", "")
             fob_val = float(doc.get("total_fob", 0.0))
-            bruto_val = float(doc.get("total_gw", 0.0))
-            netto_val = float(doc.get("total_nw", 0.0))
+            bruto_val = float(doc.get("total_gw", 0.0) or doc.get("gross_weight", 0.0) or doc.get("bruto", 0.0))
+            netto_val = float(doc.get("total_nw", 0.0) or doc.get("net_weight", 0.0) or doc.get("netto", 0.0))
+            volume_val = float(doc.get("total_volume", 0.0) or doc.get("volume", 0.0) or doc.get("cbm", 0.0) or 0.0)
             country_val = extract_iso_country(doc.get("country", "US"))
             pelabuhan_tujuan_val = str(doc.get("pelabuhan_tujuan", "USCHS")).strip()
             etd_val = format_iso_date(doc.get("etd", "2026-08-21"))
@@ -367,6 +466,8 @@ def generate_draf_peb_excel(
             ws_h[f"BQ{cur_r}"] = fob_val
             ws_h[f"CB{cur_r}"] = bruto_val
             ws_h[f"CC{cur_r}"] = netto_val
+            if volume_val > 0:
+                ws_h[f"CD{cur_r}"] = volume_val
             ws_h[f"CE{cur_r}"] = kota_pernyataan
             ws_h[f"CF{cur_r}"] = tanggal_pernyataan
             ws_h[f"CG{cur_r}"] = nama_pernyataan

@@ -368,7 +368,7 @@
                 <div class="d-flex align-items-center gap-3">
                     <span class="text-muted small">Penerima (Consignee): <strong class="text-primary">{{ doc.consignee_name or doc.buyer_name }}</strong></span>
                     <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-2 py-1">
-                        {{ doc.total_qty }} PCS | ${{ "{:,.2f}".format(doc.total_fob) }}
+                        {{ doc.total_qty }} PCS | ${{ "{:,.2f}".format(doc.total_fob) }} | GW: {{ "{:,.2f}".format(doc.total_gw) }} KG | NW: {{ "{:,.2f}".format(doc.total_nw) }} KG
                     </span>
                 </div>
             </div>
@@ -433,7 +433,7 @@
                     </div>
                 </div>
 
-                <!-- 2. PARAMETER TUJUAN, B/L & TRANSPORTASI DOKUMEN INI (SALING BERDEKATAN) -->
+                <!-- 2. PARAMETER TUJUAN, B/L, TRANSPORTASI & BERAT (BRUTO/NETTO) DOKUMEN INI -->
                 <div class="p-3 bg-light rounded-3 border mb-3">
                     <div class="row g-3">
                         <!-- Baris 1: Negara Tujuan & Pelabuhan Tujuan (Bersebelahan) -->
@@ -462,7 +462,7 @@
                             </div>
                         </div>
 
-                        <!-- Baris 2: Transportasi & Penerima -->
+                        <!-- Baris 2: Transportasi -->
                         <div class="col-md-4">
                             <div class="form-floating">
                                 <input type="text" class="form-control fw-semibold" id="doc_{{ d_idx }}_vessel" name="doc_{{ d_idx }}_vessel" value="{{ doc.vessel }}" style="background: #ffffff;">
@@ -478,7 +478,27 @@
                         <div class="col-md-4">
                             <div class="form-floating">
                                 <input type="text" class="form-control fw-semibold" id="doc_{{ d_idx }}_flag_code" name="doc_{{ d_idx }}_flag_code" value="{{ doc.flag_code or '' }}" placeholder="Contoh: SG" style="background: #ffffff;">
-                                <label>Kode Bendera Pengangkut (Input Manual)</label>
+                                <label>Kode Bendera Pengangkut</label>
+                            </div>
+                        </div>
+
+                        <!-- Baris 3: Berat & Volume (Gross Weight / Bruto, Net Weight / Netto, Volume) -->
+                        <div class="col-md-4 col-6">
+                            <div class="form-floating">
+                                <input type="number" step="0.01" class="form-control fw-bold text-success" id="doc_{{ d_idx }}_gw" name="doc_{{ d_idx }}_gw" value="{{ doc.total_gw }}" style="background: #ffffff;">
+                                <label><i class="bi bi-box-seam text-success me-1"></i> Bruto / Gross Weight (KG)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <div class="form-floating">
+                                <input type="number" step="0.01" class="form-control fw-semibold" id="doc_{{ d_idx }}_nw" name="doc_{{ d_idx }}_nw" value="{{ doc.total_nw }}" style="background: #ffffff;">
+                                <label><i class="bi bi-box text-muted me-1"></i> Netto / Net Weight (KG)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-12">
+                            <div class="form-floating">
+                                <input type="number" step="0.001" class="form-control fw-semibold" id="doc_{{ d_idx }}_volume" name="doc_{{ d_idx }}_volume" value="{{ doc.total_volume or 0 }}" style="background: #ffffff;">
+                                <label><i class="bi bi-aspect-ratio text-muted me-1"></i> Volume / Measurement (CBM)</label>
                             </div>
                         </div>
                     </div>
