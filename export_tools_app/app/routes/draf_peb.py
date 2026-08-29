@@ -119,7 +119,7 @@ def generate():
             "tanggal_pernyataan": request.form.get("global_tanggal_pernyataan", datetime.now().strftime("%Y-%m-%d")).strip(),
             "nama_pernyataan": request.form.get("global_nama_pernyataan", "EUN SUN KANG").strip(),
             "jabatan_pernyataan": request.form.get("global_jabatan_pernyataan", "MANAGER").strip(),
-            "ndpbm_kurs": float(request.form.get("global_ndpbm_kurs", 17960)),
+            "ndpbm_kurs": float(str(request.form.get("global_ndpbm_kurs", 17960) or 17960).replace(',', '').strip()),
             "kode_daerah_asal": request.form.get("global_kode_daerah_asal", "3603").strip(),
             "kode_negara_asal": request.form.get("global_kode_negara_asal", "ID").strip(),
             "kode_jenis_ekspor": request.form.get("global_kode_jenis_ekspor", "1").strip(),

@@ -521,6 +521,7 @@ def generate_draf_peb_excel(
             ws_h[f"AV{cur_r}"] = etd_val
             ws_h[f"AZ{cur_r}"] = tanggal_periksa
             ws_h[f"BQ{cur_r}"] = fob_val
+            ws_h[f"BW{cur_r}"] = ndpbm_kurs
             ws_h[f"CB{cur_r}"] = bruto_val
             ws_h[f"CC{cur_r}"] = netto_val
             if volume_val > 0:
