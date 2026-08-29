@@ -340,10 +340,16 @@
                         <label>Kurs NDPBM (Rp)</label>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="form-floating">
-                        <input type="date" class="form-control fw-semibold" id="global_tanggal_periksa" name="global_tanggal_periksa" value="{{ (global_data and global_data.tanggal_periksa) or today_date }}" style="background: #ffffff;">
-                        <label>Tanggal Periksa</label>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" class="form-control fw-semibold" id="global_tanggal_periksa" name="global_tanggal_periksa" value="{{ (global_data and global_data.tanggal_periksa) or today_date }}" placeholder="YYYY-MM-DD" style="background: #ffffff;">
+                            <label>Tanggal Periksa (YYYY-MM-DD)</label>
+                        </div>
+                        <button class="btn btn-outline-primary px-3 d-flex align-items-center" type="button" onclick="document.getElementById('hidden_global_tgl_periksa').showPicker();" title="Buka Kalender">
+                            <i class="bi bi-calendar3 fs-6"></i>
+                        </button>
+                        <input type="date" id="hidden_global_tgl_periksa" class="d-none" onchange="document.getElementById('global_tanggal_periksa').value = this.value;">
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -467,9 +473,15 @@
                             </div>
                         </div>
                         <div class="col-md-3 col-6">
-                            <div class="form-floating">
-                                <input type="date" class="form-control fw-bold text-dark" id="doc_{{ d_idx }}_invoice_date" name="doc_{{ d_idx }}_invoice_date" value="{{ doc.invoice_date }}" style="background: #ffffff;">
-                                <label><i class="bi bi-calendar-event text-primary me-1"></i> Tgl Invoice / PL (YYYY-MM-DD)</label>
+                            <div class="input-group">
+                                <div class="form-floating flex-grow-1">
+                                    <input type="text" class="form-control fw-bold text-dark" id="doc_{{ d_idx }}_invoice_date" name="doc_{{ d_idx }}_invoice_date" value="{{ doc.invoice_date }}" placeholder="YYYY-MM-DD" style="background: #ffffff;">
+                                    <label><i class="bi bi-calendar-event text-primary me-1"></i> Tgl Invoice/PL (YYYY-MM-DD)</label>
+                                </div>
+                                <button class="btn btn-outline-primary px-3 d-flex align-items-center" type="button" onclick="document.getElementById('hidden_inv_picker_{{ d_idx }}').showPicker();" title="Buka Kalender">
+                                    <i class="bi bi-calendar3 fs-6"></i>
+                                </button>
+                                <input type="date" id="hidden_inv_picker_{{ d_idx }}" class="d-none" onchange="document.getElementById('doc_{{ d_idx }}_invoice_date').value = this.value;">
                             </div>
                         </div>
                         <div class="col-md-3 col-6">
@@ -493,9 +505,15 @@
                             </div>
                         </div>
                         <div class="col-md-3 col-6">
-                            <div class="form-floating">
-                                <input type="date" class="form-control fw-semibold" id="doc_{{ d_idx }}_bl_date" name="doc_{{ d_idx }}_bl_date" value="{{ doc.bl_date }}" style="background: #ffffff;">
-                                <label>Tanggal B/L (YYYY-MM-DD)</label>
+                            <div class="input-group">
+                                <div class="form-floating flex-grow-1">
+                                    <input type="text" class="form-control fw-semibold" id="doc_{{ d_idx }}_bl_date" name="doc_{{ d_idx }}_bl_date" value="{{ doc.bl_date }}" placeholder="YYYY-MM-DD" style="background: #ffffff;">
+                                    <label><i class="bi bi-calendar-check text-muted me-1"></i> Tanggal B/L (YYYY-MM-DD)</label>
+                                </div>
+                                <button class="btn btn-outline-secondary px-3 d-flex align-items-center" type="button" onclick="document.getElementById('hidden_bl_picker_{{ d_idx }}').showPicker();" title="Buka Kalender">
+                                    <i class="bi bi-calendar3 fs-6"></i>
+                                </button>
+                                <input type="date" id="hidden_bl_picker_{{ d_idx }}" class="d-none" onchange="document.getElementById('doc_{{ d_idx }}_bl_date').value = this.value;">
                             </div>
                         </div>
 
