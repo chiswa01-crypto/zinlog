@@ -134,38 +134,72 @@ def _extract_cipl_pdf_invoice_info(pdf_path: str) -> Dict[str, str]:
 
 
 def extract_iso_country(raw_country: str, extra_text: str = "") -> str:
-    """Mengambil 2 digit kode ISO negara (contoh: US, KR, SG, ID, dsb.) secara presisi tanpa salah mengenali nama kota/jalan."""
+    """
+    Mengambil 2 digit kode ISO negara (contoh: US, CA, KR, JP, SG, AU, GB, ID, dsb.)
+    secara dinamis berdasarkan input user, dokumen CIPL, dan alamat penerima.
+    """
+    s_clean = str(raw_country or "").strip().upper()
+    
+    # 1. Jika user sudah memasukkan 2 digit kode ISO resmi di form (misal: CA, US, KR, JP, GB, AU, dsb.)
+    if len(s_clean) == 2 and s_clean.isalpha():
+        # Jangan anggap ID jika dalam teks terdapat indikasi kuat negara lain (misal Walmart USA / Canada)
+        if s_clean == "ID" and re.search(r"\b(UNITED\s+STATES|CANADA|KOREA|JAPAN|AUSTRALIA|SINGAPORE|BENTONVILLE|MISSISSAUGA)\b", extra_text, re.I):
+            pass # Lanjutkan evaluasi alamat penerima
+        else:
+            return s_clean
+
     full = f"{raw_country or ''} {extra_text or ''}".strip().upper()
     if not full:
         return "US"
 
-    # 1. Prioritas US (United States, Walmart, US States & Cities)
-    if re.search(r"\b(UNITED\s+STATES|U\.?S\.?A\.?|U\.?S\.?|AMERICA|WALMART|BENTONVILLE|SAVANNAH|CHARLESTON|RIDGEVILLE|WILMINGTON|HOUSTON|CHICAGO|LOS\s+ANGELES|NEW\s+YORK)\b", full, re.I):
+    # 2. Kanada (Termasuk Walmart Canada, Ontario, Mississauga, Toronto, Vancouver, dsb.)
+    if re.search(r"\b(CANADA|WAL-?MART\s+CANADA|MISSISSAUGA|ONTARIO|TORONTO|VANCOUVER|CALGARY|MONTREAL|QUEBEC|EDMONTON|OTTAWA)\b", full, re.I):
+        return "CA"
+
+    # 3. Amerika Serikat / US (Walmart US, Bentonville, Charleston, Savannah, dsb.)
+    if re.search(r"\b(UNITED\s+STATES|U\.?S\.?A\.?|U\.?S\.?|AMERICA|BENTONVILLE|SAVANNAH|CHARLESTON|RIDGEVILLE|WILMINGTON|HOUSTON|CHICAGO|LOS\s+ANGELES|NEW\s+YORK)\b", full, re.I):
+        return "US"
+    if re.search(r"\bWALMART\b", full, re.I) and not re.search(r"\bCANADA\b", full, re.I):
         return "US"
 
-    # 2. US State 2-letter codes (e.g. SC, GA, AR, TX, CA, NY)
+    # 4. Kode Bagian Negara US (US States: SC, GA, AR, TX, CA, NY, dsb.)
     if raw_country and re.search(r"\b(SC|GA|CA|TX|FL|NY|IL|PA|OH|NC|NJ|VA|WA|AZ|MA|TN|IN|MO|MD|WI|CO|MN|NV|AL|LA|KY|OR|OK|CT|UT|IA|MS|AR|KS|NM|NE|WV|HI|NH|ME|MT|RI|DE|SD|ND|AK|DC|WY)\b", str(raw_country).upper()):
         if not re.search(r"\b(INDONESIA|JAKARTA|TANGERANG|SURABAYA|SEMARANG)\b", full, re.I):
             return "US"
 
-    # 3. Korea
-    if re.search(r"\b(KOREA|SOUTH\s+KOREA|SEOUL|SEONGNAM|GYUNGGI|KR)\b", full, re.I):
+    # 5. Korea Selatan
+    if re.search(r"\b(KOREA|SOUTH\s+KOREA|SEOUL|SEONGNAM|GYUNGGI|BUSAN|INCHEON|KR)\b", full, re.I):
         return "KR"
 
-    # 4. Singapore
+    # 6. Jepang
+    if re.search(r"\b(JAPAN|TOKYO|OSAKA|YOKOHAMA|NAGOYA|KOBE|JP)\b", full, re.I):
+        return "JP"
+
+    # 7. Australia
+    if re.search(r"\b(AUSTRALIA|SYDNEY|MELBOURNE|BRISBANE|PERTH|ADELAIDE|AU)\b", full, re.I):
+        return "AU"
+
+    # 8. Inggris / United Kingdom
+    if re.search(r"\b(UNITED\s+KINGDOM|GREAT\s+BRITAIN|ENGLAND|LONDON|UK|GB)\b", full, re.I):
+        return "GB"
+
+    # 9. Singapura
     if re.search(r"\b(SINGAPORE|SG)\b", full, re.I):
         return "SG"
 
-    # 5. Indonesia (Gunakan batasan kata utuh agar tidak cocok dengan kata seperti RIDGEVILLE atau GUIDE)
+    # 10. Malaysia
+    if re.search(r"\b(MALAYSIA|KUALA\s+LUMPUR|PENANG|JOHOR|MY)\b", full, re.I):
+        return "MY"
+
+    # 11. Vietnam
+    if re.search(r"\b(VIETNAM|HANOI|HO\s+CHI\s+MINH|VN)\b", full, re.I):
+        return "VN"
+
+    # 12. Indonesia (Hanya jika benar-benar eksplisit)
     if re.search(r"\b(INDONESIA|IDN|JAKARTA|TANGERANG|SURABAYA|SEMARANG|BANDUNG|CIKUPA|BANTEN)\b", full, re.I):
         return "ID"
-    if str(raw_country or "").strip().upper() == "ID":
+    if s_clean == "ID":
         return "ID"
-
-    # 6. Direct 2-letter country code check
-    s_clean = str(raw_country or "").strip().upper()
-    if len(s_clean) == 2 and s_clean.isalpha():
-        return s_clean
 
     return "US"
 
