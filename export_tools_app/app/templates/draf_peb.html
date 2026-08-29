@@ -405,7 +405,13 @@
                         <i class="bi bi-link-45deg fs-5 me-1"></i> Gabung Semua ke 1 File Excel
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2 rounded-3" onclick="splitAllDocsToUniqueExcels();">
-                        <i class="bi bi-scissors me-1"></i> Pisahkan Semua (1 File = 1 File Excel Sendiri)
+                        <i class="bi bi-scissors me-1"></i> Pisahkan Semua (1 File = 1 File Excel)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-dark fw-bold px-3 py-2 rounded-3" onclick="expandAllDocSections();" title="Buka Semua Rincian Berkas">
+                        <i class="bi bi-arrows-expand me-1"></i> Buka Semua
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-dark fw-bold px-3 py-2 rounded-3" onclick="collapseAllDocSections();" title="Tutup Semua Rincian Berkas">
+                        <i class="bi bi-arrows-collapse me-1"></i> Tutup Semua
                     </button>
                 </div>
             </div>
@@ -414,23 +420,28 @@
         {% for doc in documents %}
         {% set d_idx = loop.index0 %}
         <div class="card-doc-item">
-            <!-- Card Header -->
-            <div class="card-doc-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <!-- Card Header (Clickable Toggle) -->
+            <div class="card-doc-header d-flex flex-wrap align-items-center justify-content-between gap-2" 
+                 style="cursor: pointer;" onclick="toggleDocSection({{ d_idx }});">
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">BERKAS #{{ loop.index }}</span>
                     <strong class="text-dark fs-6"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> {{ doc.filename }}</strong>
                     <span class="badge bg-light text-dark border">Inv: {{ doc.invoice_no }}</span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <span class="text-muted small">Penerima (Consignee): <strong class="text-primary">{{ doc.consignee_name or doc.buyer_name }}</strong></span>
+                    <span class="text-muted small d-none d-md-inline">Penerima: <strong class="text-primary">{{ doc.consignee_name or doc.buyer_name }}</strong></span>
                     <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-2 py-1">
                         {{ doc.total_qty }} PCS | ${{ "{:,.2f}".format(doc.total_fob) }} | GW: {{ "{:,.2f}".format(doc.total_gw) }} KG | NW: {{ "{:,.2f}".format(doc.total_nw) }} KG
                     </span>
+                    <button class="btn btn-sm btn-outline-primary fw-bold px-3 py-1 rounded-pill shadow-none" 
+                            type="button" id="btnToggleDoc_{{ d_idx }}" onclick="event.stopPropagation(); toggleDocSection({{ d_idx }});">
+                        <i class="bi bi-chevron-up me-1" id="iconToggleDoc_{{ d_idx }}"></i> <span id="textToggleDoc_{{ d_idx }}">Sembunyikan</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Card Body -->
-            <div class="p-3 p-md-4">
+            <!-- Card Body (Collapsible) -->
+            <div class="p-3 p-md-4" id="docSectionContent_{{ d_idx }}" style="transition: all 0.3s ease;">
                 <!-- PILIHAN TARGET BERKAS FILE EXCEL OUTPUT (.xlsx) -->
                 <div class="p-2 px-3 rounded-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
                     <div class="d-flex align-items-center gap-2">
@@ -999,6 +1010,50 @@
             if (icon) icon.className = 'bi bi-chevron-down me-1';
             if (text) text.innerText = 'Tampilkan';
         }
+    }
+
+    // =========================================================================
+    // FITUR HIDE / UNHIDE PER DOKUMEN BERKAS
+    // =========================================================================
+    function toggleDocSection(idx) {
+        const content = document.getElementById(`docSectionContent_${idx}`);
+        const icon = document.getElementById(`iconToggleDoc_${idx}`);
+        const text = document.getElementById(`textToggleDoc_${idx}`);
+        if (!content) return;
+
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            if (icon) icon.className = 'bi bi-chevron-up me-1';
+            if (text) text.innerText = 'Sembunyikan';
+        } else {
+            content.style.display = 'none';
+            if (icon) icon.className = 'bi bi-chevron-down me-1';
+            if (text) text.innerText = 'Tampilkan';
+        }
+    }
+
+    function expandAllDocSections() {
+        document.querySelectorAll('[id^="docSectionContent_"]').forEach(el => {
+            el.style.display = 'block';
+        });
+        document.querySelectorAll('[id^="iconToggleDoc_"]').forEach(el => {
+            el.className = 'bi bi-chevron-up me-1';
+        });
+        document.querySelectorAll('[id^="textToggleDoc_"]').forEach(el => {
+            el.innerText = 'Sembunyikan';
+        });
+    }
+
+    function collapseAllDocSections() {
+        document.querySelectorAll('[id^="docSectionContent_"]').forEach(el => {
+            el.style.display = 'none';
+        });
+        document.querySelectorAll('[id^="iconToggleDoc_"]').forEach(el => {
+            el.className = 'bi bi-chevron-down me-1';
+        });
+        document.querySelectorAll('[id^="textToggleDoc_"]').forEach(el => {
+            el.innerText = 'Tampilkan';
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
