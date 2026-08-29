@@ -787,6 +787,11 @@
 
 {% block extra_js %}
 <script>
+    // Mencegah popup notifikasi browser "Konfirmasikan Pengiriman Ulang Formulir" saat Refresh (F5) / Navigasi
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+    }
+
     // Accumulative Staged File Store (Map: filename -> File)
     const stagedCiplFiles = new Map();
 
