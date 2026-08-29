@@ -931,3 +931,23 @@ def generate_draf_peb_excel(
     wb.save(output_path)
     logger.info(f"File Draf PEB Excel ({len(documents)} Aju) berhasil dibuat: {output_path}")
     return output_path
+
+
+def create_zip_bundle(file_paths: List[str], zip_output_path: Optional[str] = None) -> str:
+    """
+    Membuat arsip ZIP berisi daftar file Excel yang dihasilkan.
+    """
+    import zipfile
+    if not zip_output_path:
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_dir = r"d:/new project/export_tools_app/uploads"
+        os.makedirs(out_dir, exist_ok=True)
+        zip_output_path = os.path.join(out_dir, f"Draf_PEB_Bundle_{len(file_paths)}_Files_{ts}.zip")
+
+    os.makedirs(os.path.dirname(zip_output_path), exist_ok=True)
+    with zipfile.ZipFile(zip_output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for fp in file_paths:
+            if os.path.exists(fp):
+                zipf.write(fp, arcname=os.path.basename(fp))
+    logger.info(f"Bundle ZIP Draf PEB ({len(file_paths)} File) berhasil dibuat: {zip_output_path}")
+    return zip_output_path

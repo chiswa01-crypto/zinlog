@@ -8,11 +8,12 @@ import json
 from datetime import datetime
 from flask import Blueprint, render_template, request, flash, current_app, send_file, redirect, url_for, session
 from werkzeug.utils import secure_filename
+from collections import defaultdict
 from app.services.draf_peb_service import (
     parse_cipl_file_for_draf_peb,
     parse_multiple_cipl_files_for_draf_peb,
     generate_draf_peb_excel,
-    consolidate_cipl_documents,
+    create_zip_bundle,
     format_iso_date
 )
 
@@ -131,10 +132,10 @@ def generate():
         # 2. UPDATE PARAMETER KHUSUS TIAP DOKUMEN DARI FORM
         prefix_aju = "000030ZIK480"
         for idx, doc in enumerate(documents):
-            # Ambil group_id (default: str(idx + 1))
-            doc["group_id"] = request.form.get(f"doc_{idx}_group", doc.get("group_id", str(idx + 1))).strip()
+            # Target Berkas Excel (default: '1')
+            doc["excel_group"] = request.form.get(f"doc_{idx}_excel_group", doc.get("excel_group", "1")).strip()
 
-            # Ambil override nomor aju (Date + Seq)
+            # Ambil override nomor aju (Date + Seq) - Setiap dokumen memiliki No. Aju mandiri!
             date_part = request.form.get(f"doc_{idx}_date", doc.get("date_8digit", datetime.now().strftime("%Y%m%d"))).strip()
             seq_part = request.form.get(f"doc_{idx}_seq", doc.get("seq_6digit", f"{635+idx:06d}")).strip()
             full_aju = f"{prefix_aju}{date_part}{seq_part}"
@@ -188,27 +189,48 @@ def generate():
             if request.form.get(f"doc_{idx}_qty"):
                 doc["total_qty"] = int(request.form.get(f"doc_{idx}_qty", doc.get("total_qty", 0)))
 
-        # 3. KONSOLIDASI BERDASARKAN GRUP AJU (GABUNG ATAU PISAH)
-        try:
-            first_seq = int(documents[0].get("seq_6digit", 635)) if documents else 635
-        except (ValueError, TypeError):
-            first_seq = 635
-
-        consolidated_docs = consolidate_cipl_documents(documents, start_seq=first_seq)
+        # 3. KELOMPOKKAN DOKUMEN KE DALAM FILE EXCEL OUTPUT MASING-MASING
+        excel_groups = defaultdict(list)
+        for doc in documents:
+            egrp = str(doc.get("excel_group", "1")).strip() or "1"
+            excel_groups[egrp].append(doc)
 
         template_path = r"D:\DOC\contoh draf peb.xlsx"
-        output_excel_path = generate_draf_peb_excel(consolidated_docs, global_data, template_path=template_path)
-        excel_filename = os.path.basename(output_excel_path)
+        generated_files = []
+        generated_paths = []
 
-        flash(f"Draf PEB Konsolidasi ({len(consolidated_docs)} No. Pengajuan dari {len(documents)} berkas CIPL) berhasil digenerasi dengan format resmi CEISA!", "success")
+        for g_idx, (egrp_id, g_docs) in enumerate(excel_groups.items()):
+            out_excel_path = generate_draf_peb_excel(g_docs, global_data, template_path=template_path)
+            fname = os.path.basename(out_excel_path)
+            generated_paths.append(out_excel_path)
+            generated_files.append({
+                "filename": fname,
+                "excel_group_id": egrp_id,
+                "file_number": g_idx + 1,
+                "doc_count": len(g_docs),
+                "documents": g_docs,
+                "total_qty": sum(int(d.get("total_qty", 0) or 0) for d in g_docs),
+                "total_fob": round(sum(float(d.get("total_fob", 0.0) or 0.0) for d in g_docs), 2),
+                "total_gw": round(sum(float(d.get("total_gw", 0.0) or 0.0) for d in g_docs), 2),
+                "download_url": url_for('draf_peb.download_file', filename=fname)
+            })
+
+        zip_filename = None
+        if len(generated_files) > 1:
+            zip_path = create_zip_bundle(generated_paths)
+            zip_filename = os.path.basename(zip_path)
+
+        first_excel = generated_files[0]["filename"] if generated_files else ""
+        flash(f"Berhasil menggenerasi {len(generated_files)} Berkas Excel Draf PEB ({len(documents)} Nomor Pengajuan) sesuai standar CEISA!", "success")
         return render_template(
             'draf_peb.html',
             step='result',
-            excel_filename=excel_filename,
-            documents=consolidated_docs,
-            raw_documents=documents,
-            doc_count=len(consolidated_docs),
-            raw_doc_count=len(documents),
+            excel_filename=first_excel,
+            generated_files=generated_files,
+            zip_filename=zip_filename,
+            documents=documents,
+            doc_count=len(documents),
+            file_count=len(generated_files),
             global_data=global_data,
             documents_json=json.dumps(documents),
             global_data_json=json.dumps(global_data)

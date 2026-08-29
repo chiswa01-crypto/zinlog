@@ -374,7 +374,7 @@
         </div>
 
         <!-- ====================================================================
-             2. SECTION PER-DOKUMEN & PENGELOMPOKAN (GABUNG / PISAH)
+             2. SECTION PER-DOKUMEN & PENGELOMPOKAN BERKAS EXCEL OUTPUT
              ==================================================================== -->
         <div class="card p-3 mb-4 rounded-3 border shadow-sm bg-white">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -384,18 +384,18 @@
                         Daftar Berkas CIPL ({{ doc_count }} Berkas Diunggah)
                     </h5>
                     <div class="text-muted small">
-                        Atur penggabungan (konsolidasi) beberapa berkas ke dalam 1 No. Aju atau buat masing-masing No. Aju terpisah.
+                        Setiap dokumen memiliki <strong>Nomor Aju masing-masing</strong>. Anda dapat menentukan berkas mana saja yang digabung ke dalam <strong>1 File Excel</strong> atau dibuat menjadi <strong>File Excel Terpisah</strong>.
                     </div>
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 fw-semibold" id="groupSummaryBadge">
-                        <i class="bi bi-layers-half me-1"></i> <span id="uniqueGroupCount">{{ doc_count }}</span> No. Aju Siap Dibuat
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 fw-semibold" id="excelSummaryBadge">
+                        <i class="bi bi-file-earmark-excel-fill text-success me-1"></i> <span id="uniqueExcelCount">1</span> File Excel (.xlsx) Siap Dibuat
                     </span>
-                    <button type="button" class="btn btn-sm btn-outline-success fw-bold px-3 py-2 rounded-3 shadow-sm" onclick="mergeAllDocsToOneGroup();">
-                        <i class="bi bi-link-45deg fs-5 me-1"></i> Gabung Semua Jadi 1 No. Aju
+                    <button type="button" class="btn btn-sm btn-outline-success fw-bold px-3 py-2 rounded-3 shadow-sm" onclick="mergeAllDocsToOneExcel();">
+                        <i class="bi bi-link-45deg fs-5 me-1"></i> Gabung Semua ke 1 File Excel
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2 rounded-3" onclick="splitAllDocsToUniqueGroups();">
-                        <i class="bi bi-scissors me-1"></i> Pisahkan Semua (1 File = 1 Aju)
+                    <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2 rounded-3" onclick="splitAllDocsToUniqueExcels();">
+                        <i class="bi bi-scissors me-1"></i> Pisahkan Semua (1 File = 1 File Excel Sendiri)
                     </button>
                 </div>
             </div>
@@ -421,25 +421,25 @@
 
             <!-- Card Body -->
             <div class="p-3 p-md-4">
-                <!-- PILIHAN PENGELOMPOKAN NOMOR AJU (GABUNG / PISAH) -->
-                <div class="p-2 px-3 rounded-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: #eff6ff; border: 1px solid #bfdbfe;">
+                <!-- PILIHAN TARGET BERKAS FILE EXCEL OUTPUT (.xlsx) -->
+                <div class="p-2 px-3 rounded-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-primary px-2 py-1"><i class="bi bi-diagram-3-fill me-1"></i> Pengelompokan Aju</span>
-                        <span class="small fw-bold text-dark">Alokasikan Berkas Ini ke:</span>
+                        <span class="badge bg-success px-2 py-1"><i class="bi bi-file-earmark-excel-fill me-1"></i> Target Berkas Excel Output</span>
+                        <span class="small fw-bold text-dark">Masukkan Dokumen Ini ke Dalam:</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <select class="form-select form-select-sm fw-bold text-primary shadow-none doc-group-selector" 
-                                id="doc_{{ d_idx }}_group" name="doc_{{ d_idx }}_group" 
-                                onchange="onDocGroupChanged({{ d_idx }});" 
-                                style="max-width: 230px; border: 2px solid #3b82f6; background-color: #ffffff;">
+                        <select class="form-select form-select-sm fw-bold text-success shadow-none doc-excel-selector" 
+                                id="doc_{{ d_idx }}_excel_group" name="doc_{{ d_idx }}_excel_group" 
+                                onchange="updateAllExcelGroupStatuses();" 
+                                style="max-width: 240px; border: 2px solid #22c55e; background-color: #ffffff;">
                             {% for g in range(1, doc_count + 1) %}
-                            <option value="{{ g }}" {% if (doc.group_id|string) == (g|string) or (not doc.group_id and loop.index == g) %}selected{% endif %}>
-                                📦 Nomor Pengajuan #{{ g }}
+                            <option value="{{ g }}" {% if (doc.excel_group|string) == (g|string) or (not doc.excel_group and (doc.group_id|string) == (g|string)) %}selected{% endif %}>
+                                📁 File Excel Output #{{ g }}
                             </option>
                             {% endfor %}
                         </select>
-                        <span class="badge bg-white text-secondary border small py-1 px-2 group-status-badge" id="group_status_badge_{{ d_idx }}">
-                            Aju Mandiri #{{ loop.index }}
+                        <span class="badge bg-white text-secondary border small py-1 px-2 excel-status-badge" id="excel_status_badge_{{ d_idx }}">
+                            File Excel #1
                         </span>
                     </div>
                 </div>
@@ -656,37 +656,82 @@
                 <div class="d-inline-flex p-3 bg-success bg-opacity-10 text-success rounded-circle mb-3">
                     <i class="bi bi-check-circle-fill display-4"></i>
                 </div>
-                <h3 class="fw-bold text-dark mb-2">Draf PEB Konsolidasi Berhasil Dibuat!</h3>
+                <h3 class="fw-bold text-dark mb-2">Draf PEB Berhasil Digenerasi!</h3>
                 <p class="text-muted mb-4">
-                    Berkas Excel 21 Sheet resmi CEISA berisi <strong>{{ doc_count }} Nomor Pengajuan (No. Aju)</strong> telah digenerasi sesuai format standar <code>contoh draf peb.xlsx</code>.
+                    Sebanyak <strong>{{ doc_count }} Nomor Pengajuan</strong> telah berhasil dialokasikan ke dalam <strong>{{ file_count or (generated_files|length) or 1 }} Berkas File Excel (.xlsx)</strong> resmi standar CEISA.
                 </p>
 
-                <!-- Daftar No Aju -->
-                <div class="p-3 bg-light rounded-3 border text-start mb-4">
-                    <strong class="text-dark small d-block mb-2">Ringkasan Nomor Aju yang Digenerasi:</strong>
-                    <div class="row g-2">
-                        {% for doc in documents %}
-                        <div class="col-md-6">
-                            <div class="p-2 bg-white rounded border small d-flex align-items-center justify-content-between">
-                                <div>
-                                    <span class="badge bg-primary me-1">#{{ loop.index }}</span>
-                                    <strong class="text-dark">{{ doc.nomor_aju }}</strong>
+                <!-- DAFTAR BERKAS EXCEL YANG DIHASILKAN -->
+                {% if generated_files and (generated_files|length) > 0 %}
+                <div class="text-start mb-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-folder2-open text-primary me-2"></i>Daftar Berkas Excel yang Siap Diunduh:</h6>
+                    <div class="row g-3">
+                        {% for gfile in generated_files %}
+                        <div class="col-12">
+                            <div class="card p-3 rounded-3 border shadow-sm bg-white">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 fw-bold fs-6">
+                                            <i class="bi bi-file-earmark-excel-fill text-success me-1"></i> Berkas Excel #{{ gfile.file_number }}
+                                        </span>
+                                        <div>
+                                            <strong class="text-dark d-block">{{ gfile.filename }}</strong>
+                                            <span class="text-muted small">
+                                                {{ gfile.doc_count }} Nomor Pengajuan | Total: {{ gfile.total_qty }} PCS | Total FOB: ${{ "{:,.2f}".format(gfile.total_fob) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <a href="{{ gfile.download_url }}" class="btn btn-success fw-bold px-4 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-2">
+                                        <i class="bi bi-download"></i> Unduh File Excel Ini
+                                    </a>
                                 </div>
-                                <span class="text-muted" style="font-size: 0.75rem;">{{ doc.total_qty }} PCS</span>
+                                
+                                <!-- Sub-list Dokumen / Aju di dalam file ini -->
+                                <div class="p-2 bg-light rounded-2 border">
+                                    <div class="row g-2">
+                                        {% for doc in gfile.documents %}
+                                        <div class="col-md-6">
+                                            <div class="p-2 bg-white rounded border small d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <span class="badge bg-primary me-1">No. Aju</span>
+                                                    <strong class="text-dark font-monospace">{{ doc.nomor_aju }}</strong>
+                                                </div>
+                                                <span class="text-muted small">Inv: {{ doc.invoice_no }} ({{ doc.total_qty }} PCS)</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
 
-                <!-- ACTION BUTTONS: DOWNLOAD, RE-EDIT, BUAT BARU -->
-                <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
+                <!-- BUNDLE ZIP JIKA LEBIH DARI 1 FILE EXCEL -->
+                {% if zip_filename %}
+                <div class="p-3 bg-light rounded-3 border mb-4 text-center">
+                    <a href="{{ url_for('draf_peb.download_file', filename=zip_filename) }}" 
+                       class="btn btn-primary btn-lg px-5 py-3 fw-bold rounded-4 shadow d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-zip-fill fs-3 text-warning"></i>
+                        <span>Unduh Semua File Sekaligus (.ZIP Bundle - {{ generated_files|length }} File)</span>
+                    </a>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <!-- SINGLE EXCEL FALLBACK -->
+                <div class="mb-4">
                     <a href="{{ url_for('draf_peb.download_file', filename=excel_filename) }}" 
                        class="btn btn-success btn-lg px-5 py-3 fw-bold rounded-4 shadow-lg d-inline-flex align-items-center gap-2">
                         <i class="bi bi-download fs-4"></i>
                         <span>Download Draf PEB (.xlsx)</span>
                     </a>
+                </div>
+                {% endif %}
 
+                <!-- ACTION BUTTONS: RE-EDIT, BUAT BARU -->
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mt-3">
                     <!-- Tombol Edit / Revisi Data Lagi -->
                     <form action="{{ url_for('draf_peb.re_edit') }}" method="POST" class="d-inline m-0">
                         <input type="hidden" name="documents_json" value='{{ documents_json }}'>
@@ -883,58 +928,54 @@
     }
 
     // =========================================================================
-    // FITUR PENGGABUNGAN & PEMISAHAN DOKUMEN (MERGE / SPLIT GROUPS)
+    // FITUR PENGELOMPOKAN FILE EXCEL OUTPUT (GABUNG / PISAH FILE EXCEL)
     // =========================================================================
-    function updateAllGroupStatuses() {
-        const groupSelects = document.querySelectorAll('.doc-group-selector');
-        if (!groupSelects || groupSelects.length === 0) return;
+    function updateAllExcelGroupStatuses() {
+        const excelSelects = document.querySelectorAll('.doc-excel-selector');
+        if (!excelSelects || excelSelects.length === 0) return;
 
         const groupCounts = {};
-        groupSelects.forEach(sel => {
+        excelSelects.forEach(sel => {
             const val = sel.value;
             groupCounts[val] = (groupCounts[val] || 0) + 1;
         });
 
-        const uniqueGroups = Object.keys(groupCounts).length;
-        const countSpan = document.getElementById('uniqueGroupCount');
-        if (countSpan) countSpan.innerText = uniqueGroups;
+        const uniqueCount = Object.keys(groupCounts).length;
+        const countSpan = document.getElementById('uniqueExcelCount');
+        if (countSpan) countSpan.innerText = uniqueCount;
 
-        groupSelects.forEach((sel, idx) => {
+        excelSelects.forEach((sel, idx) => {
             const val = sel.value;
-            const badge = document.getElementById(`group_status_badge_${idx}`);
+            const badge = document.getElementById(`excel_status_badge_${idx}`);
             if (!badge) return;
             if (groupCounts[val] > 1) {
-                badge.className = 'badge bg-success text-white border-0 small py-1 px-2 group-status-badge';
-                badge.innerHTML = `<i class="bi bi-link-45deg"></i> Digabung (${groupCounts[val]} Berkas di No. Aju #${val})`;
+                badge.className = 'badge bg-success text-white border-0 small py-1 px-2 excel-status-badge';
+                badge.innerHTML = `<i class="bi bi-files me-1"></i> Digabung di File Excel #${val} (${groupCounts[val]} Berkas)`;
             } else {
-                badge.className = 'badge bg-light text-muted border small py-1 px-2 group-status-badge';
-                badge.innerText = `Aju Mandiri #${val}`;
+                badge.className = 'badge bg-light text-muted border small py-1 px-2 excel-status-badge';
+                badge.innerText = `File Excel Sendiri #${val}`;
             }
         });
     }
 
-    function onDocGroupChanged(idx) {
-        updateAllGroupStatuses();
-    }
-
-    function mergeAllDocsToOneGroup() {
-        const groupSelects = document.querySelectorAll('.doc-group-selector');
-        groupSelects.forEach(sel => {
+    function mergeAllDocsToOneExcel() {
+        const excelSelects = document.querySelectorAll('.doc-excel-selector');
+        excelSelects.forEach(sel => {
             sel.value = '1';
         });
-        updateAllGroupStatuses();
+        updateAllExcelGroupStatuses();
     }
 
-    function splitAllDocsToUniqueGroups() {
-        const groupSelects = document.querySelectorAll('.doc-group-selector');
-        groupSelects.forEach((sel, idx) => {
+    function splitAllDocsToUniqueExcels() {
+        const excelSelects = document.querySelectorAll('.doc-excel-selector');
+        excelSelects.forEach((sel, idx) => {
             sel.value = (idx + 1).toString();
         });
-        updateAllGroupStatuses();
+        updateAllExcelGroupStatuses();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        updateAllGroupStatuses();
+        updateAllExcelGroupStatuses();
     });
 </script>
 {% endblock %}
