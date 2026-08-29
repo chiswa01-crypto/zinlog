@@ -60,7 +60,13 @@ def process_cipl():
         return redirect(url_for('draf_peb.index'))
 
     try:
-        documents = parse_multiple_cipl_files_for_draf_peb(saved_paths, start_seq=635)
+        start_seq_val = request.form.get('start_seq', '635')
+        try:
+            start_seq = int(start_seq_val) if start_seq_val and str(start_seq_val).strip() else 635
+        except ValueError:
+            start_seq = 635
+
+        documents = parse_multiple_cipl_files_for_draf_peb(saved_paths, start_seq=start_seq)
         total_items_count = sum(len(d.get("items", [])) for d in documents)
         total_qty_all = sum(d.get("total_qty", 0) for d in documents)
         total_fob_all = sum(d.get("total_fob", 0.0) for d in documents)
@@ -131,6 +137,13 @@ def generate():
             doc["nomor_aju"] = full_aju
             doc["date_8digit"] = date_part
             doc["seq_6digit"] = seq_part
+
+            # Per-Dokumen: Invoice & Packing List (Nomor & Tanggal)
+            if request.form.get(f"doc_{idx}_invoice_no"):
+                doc["invoice_no"] = request.form.get(f"doc_{idx}_invoice_no").strip()
+            if request.form.get(f"doc_{idx}_invoice_date"):
+                doc["invoice_date"] = request.form.get(f"doc_{idx}_invoice_date").strip()
+                doc["packing_list_date"] = doc["invoice_date"]
 
             # Per-Dokumen: Negara & Pelabuhan Tujuan
             doc["country"] = request.form.get(f"doc_{idx}_country", doc.get("country", "US")).strip()

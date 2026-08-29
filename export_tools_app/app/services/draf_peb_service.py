@@ -42,7 +42,8 @@ logger.setLevel(logging.INFO)
 
 def format_iso_date(raw_date: Any, default: Optional[str] = None) -> str:
     """
-    Mengonversi berbagai format tanggal menjadi format standar YYYY-MM-DD (contoh: 2026-04-28).
+    Mengonversi berbagai format tanggal menjadi format standar YYYY-MM-DD (contoh: 2026-08-14).
+    Jika menggunakan garis miring '/', formatnya diprioritaskan sebagai MM/DD/YYYY (contoh: 08/14/2026 -> 2026-08-14).
     """
     if not raw_date:
         return default or datetime.now().strftime("%Y-%m-%d")
@@ -50,14 +51,31 @@ def format_iso_date(raw_date: Any, default: Optional[str] = None) -> str:
     if not s or s.lower() == "none":
         return default or datetime.now().strftime("%Y-%m-%d")
 
+    # Jika mengandung garis miring '/', formatnya adalah MM/DD/YYYY (contoh: 08/14/2026)
+    if "/" in s:
+        slash_patterns = [
+            "%m/%d/%Y",     # 08/14/2026
+            "%m/%d/%y",     # 08/14/26
+            "%Y/%m/%d",     # 2026/08/14
+            "%d/%m/%Y",     # Fallback jika tanggal > 12 di posisi depan
+            "%d/%m/%y",
+        ]
+        for fmt in slash_patterns:
+            try:
+                dt = datetime.strptime(s, fmt)
+                return dt.strftime("%Y-%m-%d")
+            except ValueError:
+                pass
+
     patterns = [
         "%Y-%m-%d",
-        "%d/%m/%Y",
         "%m/%d/%Y",
-        "%d-%m-%Y",
+        "%m/%d/%y",
         "%m-%d-%Y",
+        "%d-%m-%Y",
         "%Y/%m/%d",
         "%Y.%m.%d",
+        "%m.%d.%Y",
         "%d.%m.%Y",
         "%B %d %Y",     # August 21 2026
         "%B %d, %Y",    # August 21, 2026
@@ -66,6 +84,7 @@ def format_iso_date(raw_date: Any, default: Optional[str] = None) -> str:
         "%d %B %Y",     # 21 August 2026
         "%d %b %Y",     # 21 Aug 2026
         "%Y%m%d",       # 20260821
+        "%d/%m/%Y",
     ]
     for fmt in patterns:
         try:
@@ -83,6 +102,35 @@ def format_iso_date(raw_date: Any, default: Optional[str] = None) -> str:
             pass
 
     return default or datetime.now().strftime("%Y-%m-%d")
+
+
+def _extract_cipl_pdf_invoice_info(pdf_path: str) -> Dict[str, str]:
+    """
+    Ekstraksi nomor invoice dan tanggal invoice (MM/DD/YYYY) langsung dari berkas PDF CIPL.
+    """
+    inv_no = ""
+    inv_date = ""
+    try:
+        import pdfplumber
+        with pdfplumber.open(pdf_path) as pdf:
+            if pdf.pages:
+                tables = pdf.pages[0].extract_tables() or []
+                for table in tables:
+                    for row in table:
+                        for cell in row:
+                            if not cell:
+                                continue
+                            cell_str = str(cell).strip()
+                            if "Invoice No" in cell_str or "Invoice" in cell_str:
+                                date_m = re.search(r"\b(\d{1,2}[/\.-]\d{1,2}[/\.-]\d{2,4})\b", cell_str)
+                                if date_m:
+                                    inv_date = date_m.group(1).strip()
+                                inv_m = re.search(r"(?:Invoice\s+No\.?\s+(?:and|&)?\s*Date|Invoice\s*No\.?)[\s\n]+([A-Za-z0-9/\-_]+)", cell_str, re.I)
+                                if inv_m:
+                                    inv_no = inv_m.group(1).strip()
+    except Exception:
+        pass
+    return {"invoice_no": inv_no, "invoice_date": inv_date}
 
 
 def extract_iso_country(raw_country: str) -> str:
@@ -226,8 +274,16 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
     total_volume = pdf_weights.get("cbm", 0.0)
 
     inv_date_raw = first.get("tgl_inv", "")
+    if (not inv_date_raw or not first.get("invoice")) and ext == ".pdf":
+        extra_info = _extract_cipl_pdf_invoice_info(file_path)
+        if not inv_date_raw and extra_info.get("invoice_date"):
+            inv_date_raw = extra_info["invoice_date"]
+        if not first.get("invoice") and extra_info.get("invoice_no"):
+            first["invoice"] = extra_info["invoice_no"]
+
     inv_date_iso = format_iso_date(inv_date_raw, default=datetime.now().strftime("%Y-%m-%d"))
-    date_8digit = datetime.strptime(inv_date_iso, "%Y-%m-%d").strftime("%Y%m%d")
+    # Tanggal pada nomor aju: disesuaikan dengan tanggal dibuatnya draf PEB (tanggal hari ini)
+    date_8digit = datetime.now().strftime("%Y%m%d")
 
     etd_raw = first.get("etd", "")
     etd_iso = format_iso_date(etd_raw, default=inv_date_iso)
@@ -244,6 +300,7 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
         "filename": os.path.basename(file_path),
         "invoice_no": first.get("invoice", ""),
         "invoice_date": inv_date_iso,
+        "packing_list_date": inv_date_iso,
         "date_8digit": date_8digit,
         "seq_6digit": seq_str,
         "nomor_aju": default_full_aju,
