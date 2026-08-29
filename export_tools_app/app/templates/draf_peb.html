@@ -420,39 +420,23 @@
         {% for doc in documents %}
         {% set d_idx = loop.index0 %}
         <div class="card-doc-item">
-            <!-- Card Header (Clickable Toggle) -->
-            <div class="card-doc-header d-flex flex-wrap align-items-center justify-content-between gap-2" 
-                 style="cursor: pointer;" onclick="toggleDocSection({{ d_idx }});">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">BERKAS #{{ loop.index }}</span>
-                    <strong class="text-dark fs-6"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> {{ doc.filename }}</strong>
-                    <span class="badge bg-light text-dark border">Inv: {{ doc.invoice_no }}</span>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="text-muted small d-none d-md-inline">Penerima: <strong class="text-primary">{{ doc.consignee_name or doc.buyer_name }}</strong></span>
-                    <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-2 py-1">
-                        {{ doc.total_qty }} PCS | ${{ "{:,.2f}".format(doc.total_fob) }} | GW: {{ "{:,.2f}".format(doc.total_gw) }} KG | NW: {{ "{:,.2f}".format(doc.total_nw) }} KG
-                    </span>
-                    <button class="btn btn-sm btn-outline-primary fw-bold px-3 py-1 rounded-pill shadow-none" 
-                            type="button" id="btnToggleDoc_{{ d_idx }}" onclick="event.stopPropagation(); toggleDocSection({{ d_idx }});">
-                        <i class="bi bi-chevron-up me-1" id="iconToggleDoc_{{ d_idx }}"></i> <span id="textToggleDoc_{{ d_idx }}">Sembunyikan</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Card Body (Collapsible) -->
-            <div class="p-3 p-md-4" id="docSectionContent_{{ d_idx }}" style="transition: all 0.3s ease;">
-                <!-- PILIHAN TARGET BERKAS FILE EXCEL OUTPUT (.xlsx) -->
-                <div class="p-2 px-3 rounded-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-success px-2 py-1"><i class="bi bi-file-earmark-excel-fill me-1"></i> Target Berkas Excel Output</span>
-                        <span class="small fw-bold text-dark">Masukkan Dokumen Ini ke Dalam:</span>
+            <!-- Card Header (Always Visible, with Excel Group Selector & No Aju Preview) -->
+            <div class="card-doc-header p-3" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <!-- Baris 1: Identitas Berkas & Dropdown Target File Excel Output -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">BERKAS #{{ loop.index }}</span>
+                        <strong class="text-dark fs-6"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> {{ doc.filename }}</strong>
+                        <span class="badge bg-light text-dark border fw-bold">Inv: {{ doc.invoice_no }}</span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
+
+                    <!-- Dropdown Target File Excel Output langsung di Header (Mudah Diakses) -->
+                    <div class="d-flex align-items-center gap-2" onclick="event.stopPropagation();">
+                        <span class="small fw-bold text-success d-none d-sm-inline"><i class="bi bi-file-earmark-excel-fill me-1"></i>Target File:</span>
                         <select class="form-select form-select-sm fw-bold text-success shadow-none doc-excel-selector" 
                                 id="doc_{{ d_idx }}_excel_group" name="doc_{{ d_idx }}_excel_group" 
                                 onchange="updateAllExcelGroupStatuses();" 
-                                style="max-width: 240px; border: 2px solid #22c55e; background-color: #ffffff;">
+                                style="width: auto; min-width: 190px; border: 2px solid #22c55e; background-color: #ffffff;">
                             {% for g in range(1, doc_count + 1) %}
                             <option value="{{ g }}" {% if (doc.excel_group|string) == (g|string) or (not doc.excel_group and (doc.group_id|string) == (g|string)) %}selected{% endif %}>
                                 📁 File Excel Output #{{ g }}
@@ -464,6 +448,31 @@
                         </span>
                     </div>
                 </div>
+
+                <!-- Baris 2: Preview No. Aju, Ringkasan Berat/FOB & Tombol Sembunyikan/Tampilkan -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-2 border-top border-light">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-1 bg-white px-2 py-1 rounded border border-warning">
+                            <small class="text-muted fw-bold" style="font-size: 0.72rem;">NO. AJU:</small>
+                            <code class="fw-bold text-dark font-monospace" id="preview_doc_header_{{ d_idx }}" style="font-size: 0.85rem;">{{ doc.nomor_aju }}</code>
+                        </div>
+                        <span class="text-muted small d-none d-md-inline ms-1">Penerima: <strong class="text-primary">{{ doc.consignee_name or doc.buyer_name }}</strong></span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-2 py-1">
+                            {{ doc.total_qty }} PCS | ${{ "{:,.2f}".format(doc.total_fob) }} | GW: {{ "{:,.2f}".format(doc.total_gw) }} KG
+                        </span>
+                        <button class="btn btn-sm btn-outline-primary fw-bold px-3 py-1 rounded-pill shadow-none" 
+                                type="button" id="btnToggleDoc_{{ d_idx }}" onclick="toggleDocSection({{ d_idx }});">
+                            <i class="bi bi-chevron-up me-1" id="iconToggleDoc_{{ d_idx }}"></i> <span id="textToggleDoc_{{ d_idx }}">Sembunyikan</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body (Collapsible) -->
+            <div class="p-3 p-md-4" id="docSectionContent_{{ d_idx }}" style="transition: all 0.3s ease;">
 
                 <!-- 1. NOMOR AJU KHUSUS DOKUMEN INI -->
                 <div class="p-3 rounded-3 mb-3" style="background: #fefce8; border: 1px solid #fef08a;">
@@ -912,12 +921,14 @@
         const dateInput = document.getElementById(`doc_${idx}_date`);
         const seqInput = document.getElementById(`doc_${idx}_seq`);
         const previewElem = document.getElementById(`preview_doc_${idx}`);
+        const headerPreview = document.getElementById(`preview_doc_header_${idx}`);
 
         const datePart = (dateInput ? dateInput.value : "").trim();
         const seqPart = (seqInput ? seqInput.value : "").trim();
         const fullAju = prefix + datePart + seqPart;
 
         if (previewElem) previewElem.innerText = fullAju;
+        if (headerPreview) headerPreview.innerText = fullAju;
     }
 
     function openDocDatePicker(idx) {
