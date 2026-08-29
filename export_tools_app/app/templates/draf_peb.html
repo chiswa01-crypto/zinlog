@@ -789,7 +789,7 @@
 <script>
     // Mencegah popup notifikasi browser "Konfirmasikan Pengiriman Ulang Formulir" saat Refresh (F5) / Navigasi
     if (window.history.replaceState) {
-        window.history.replaceState(null, null, window.location.href);
+        window.history.replaceState(null, null, "{{ url_for('draf_peb.index') }}");
     }
 
     // Accumulative Staged File Store (Map: filename -> File)

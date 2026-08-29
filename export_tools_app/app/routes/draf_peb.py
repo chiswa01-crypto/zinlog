@@ -28,8 +28,8 @@ def index():
     return render_template('draf_peb.html', step='upload')
 
 
-@draf_bp.route('/process-cipl', methods=['POST'])
-@draf_bp.route('/process-cipl/', methods=['POST'])
+@draf_bp.route('/process-cipl', methods=['GET', 'POST'])
+@draf_bp.route('/process-cipl/', methods=['GET', 'POST'])
 def process_cipl():
     """
     Menerima kumpulan berkas CIPL yang diunggah (Single maupun Batch Multi-File),
@@ -37,6 +37,9 @@ def process_cipl():
     - Global Shared Settings (1 bagian untuk semua)
     - Dokumen Individual Cards (Nomor Aju, Vessel, Voy, Flag, Item Barang)
     """
+    if request.method == 'GET':
+        return redirect(url_for('draf_peb.index'))
+
     files = request.files.getlist('files')
     if not files or (len(files) == 1 and files[0].filename == ''):
         files = request.files.getlist('file')
@@ -92,13 +95,15 @@ def process_cipl():
         return redirect(url_for('draf_peb.index'))
 
 
-@draf_bp.route('/generate', methods=['POST'])
-@draf_bp.route('/generate/', methods=['POST'])
+@draf_bp.route('/generate', methods=['GET', 'POST'])
+@draf_bp.route('/generate/', methods=['GET', 'POST'])
 def generate():
     """
     Menerima form data yang telah disesuaikan (Global Shared + Per-Dokumen Aju)
     dan menggenerasi file Excel Draf PEB Multi-Aju sesuai templat resmi CEISA.
     """
+    if request.method == 'GET':
+        return redirect(url_for('draf_peb.index'))
     try:
         docs_json_str = request.form.get('documents_json', '[]')
         documents = json.loads(docs_json_str)
@@ -240,12 +245,14 @@ def generate():
         return redirect(url_for('draf_peb.index'))
 
 
-@draf_bp.route('/re-edit', methods=['POST'])
-@draf_bp.route('/re-edit/', methods=['POST'])
+@draf_bp.route('/re-edit', methods=['GET', 'POST'])
+@draf_bp.route('/re-edit/', methods=['GET', 'POST'])
 def re_edit():
     """
     Mengembalikan tampilan ke form editor dengan seluruh data yang telah disesuaikan sebelumnya.
     """
+    if request.method == 'GET':
+        return redirect(url_for('draf_peb.index'))
     docs_json = request.form.get('documents_json', '[]')
     global_json = request.form.get('global_data_json', '{}')
     try:
