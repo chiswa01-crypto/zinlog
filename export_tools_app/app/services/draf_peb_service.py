@@ -133,19 +133,40 @@ def _extract_cipl_pdf_invoice_info(pdf_path: str) -> Dict[str, str]:
     return {"invoice_no": inv_no, "invoice_date": inv_date}
 
 
-def extract_iso_country(raw_country: str) -> str:
-    """Mengambil 2 digit kode ISO negara (contoh: US, KR, SG, ID)."""
-    s = str(raw_country or "").strip().upper()
-    if "UNITED STATES" in s or "USA" in s or " US" in s or s == "US":
+def extract_iso_country(raw_country: str, extra_text: str = "") -> str:
+    """Mengambil 2 digit kode ISO negara (contoh: US, KR, SG, ID, dsb.) secara presisi tanpa salah mengenali nama kota/jalan."""
+    full = f"{raw_country or ''} {extra_text or ''}".strip().upper()
+    if not full:
         return "US"
-    if "KOREA" in s or "KR" in s:
+
+    # 1. Prioritas US (United States, Walmart, US States & Cities)
+    if re.search(r"\b(UNITED\s+STATES|U\.?S\.?A\.?|U\.?S\.?|AMERICA|WALMART|BENTONVILLE|SAVANNAH|CHARLESTON|RIDGEVILLE|WILMINGTON|HOUSTON|CHICAGO|LOS\s+ANGELES|NEW\s+YORK)\b", full, re.I):
+        return "US"
+
+    # 2. US State 2-letter codes (e.g. SC, GA, AR, TX, CA, NY)
+    if raw_country and re.search(r"\b(SC|GA|CA|TX|FL|NY|IL|PA|OH|NC|NJ|VA|WA|AZ|MA|TN|IN|MO|MD|WI|CO|MN|NV|AL|LA|KY|OR|OK|CT|UT|IA|MS|AR|KS|NM|NE|WV|HI|NH|ME|MT|RI|DE|SD|ND|AK|DC|WY)\b", str(raw_country).upper()):
+        if not re.search(r"\b(INDONESIA|JAKARTA|TANGERANG|SURABAYA|SEMARANG)\b", full, re.I):
+            return "US"
+
+    # 3. Korea
+    if re.search(r"\b(KOREA|SOUTH\s+KOREA|SEOUL|SEONGNAM|GYUNGGI|KR)\b", full, re.I):
         return "KR"
-    if "INDONESIA" in s or "ID" in s:
-        return "ID"
-    if "SINGAPORE" in s or "SG" in s:
+
+    # 4. Singapore
+    if re.search(r"\b(SINGAPORE|SG)\b", full, re.I):
         return "SG"
-    if len(s) == 2:
-        return s
+
+    # 5. Indonesia (Gunakan batasan kata utuh agar tidak cocok dengan kata seperti RIDGEVILLE atau GUIDE)
+    if re.search(r"\b(INDONESIA|IDN|JAKARTA|TANGERANG|SURABAYA|SEMARANG|BANDUNG|CIKUPA|BANTEN)\b", full, re.I):
+        return "ID"
+    if str(raw_country or "").strip().upper() == "ID":
+        return "ID"
+
+    # 6. Direct 2-letter country code check
+    s_clean = str(raw_country or "").strip().upper()
+    if len(s_clean) == 2 and s_clean.isalpha():
+        return s_clean
+
     return "US"
 
 
@@ -294,7 +315,12 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
     default_full_aju = f"{prefix_aju}{date_8digit}{seq_str}"
 
     raw_country = first.get("negara", "US")
-    iso_country = extract_iso_country(raw_country)
+    consignee_name_val = first.get("consignee", "").strip() or "WALMART, INC."
+    consignee_address_val = first.get("alamat_consignee", "").strip() or "811 EXCELLENCE DRIVE\nBENTONVILLE AR 72716\nUNITED STATES"
+    buyer_name_val = first.get("buyer", "ZINUS INC.")
+    buyer_address_val = first.get("alamat_buyer", "8F, 10(AMIGO-TOWER) YATAP-RO, 81 BEON-GIL, BUNDANG-GU, SEONGNAM-SI, GYUNGGI-DO, KOREA")
+
+    iso_country = extract_iso_country(raw_country, f"{consignee_name_val} {consignee_address_val} {buyer_name_val} {buyer_address_val}")
 
     return {
         "filename": os.path.basename(file_path),
@@ -313,10 +339,10 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
         "vessel": first.get("vessel", "SINAR CARITA"),
         "voy_no": "",
         "flag_code": "",
-        "buyer_name": first.get("buyer", "ZINUS INC."),
-        "buyer_address": first.get("alamat_buyer", "8F, 10(AMIGO-TOWER) YATAP-RO, 81 BEON-GIL, BUNDANG-GU, SEONGNAM-SI, GYUNGGI-DO, KOREA"),
-        "consignee_name": first.get("consignee", "").strip() or "WALMART, INC.",
-        "consignee_address": first.get("alamat_consignee", "").strip() or "811 EXCELLENCE DRIVE\nBENTONVILLE AR 72716\nUNITED STATES",
+        "buyer_name": buyer_name_val,
+        "buyer_address": buyer_address_val,
+        "consignee_name": consignee_name_val,
+        "consignee_address": consignee_address_val,
         "total_qty": total_qty,
         "total_fob": round(total_fob, 2),
         "total_nw": round(total_nw, 2),
@@ -620,9 +646,9 @@ def generate_draf_peb_excel(
         cur_ent_r = 2
         for d_idx, doc in enumerate(documents):
             no_aju = doc.get("nomor_aju", "")
-            iso_country = extract_iso_country(doc.get("country", "US"))
             consignee_name = doc.get("consignee_name", "").strip() or doc.get("buyer_name", "WALMART, INC.").strip()
             consignee_address = doc.get("consignee_address", "").strip() or doc.get("buyer_address", "811 EXCELLENCE DRIVE\nBENTONVILLE AR 72716\nUNITED STATES").strip()
+            iso_country = extract_iso_country(doc.get("country", "US"), f"{consignee_name} {consignee_address}")
 
             # Entitas 1: Seri 6 - ZINUS INC. (KR)
             ws_e.cell(row=cur_ent_r, column=1, value=no_aju)
