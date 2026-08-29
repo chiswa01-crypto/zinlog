@@ -374,14 +374,31 @@
         </div>
 
         <!-- ====================================================================
-             2. SECTION PER-DOKUMEN (UNIK TIAP PENGAJUAN)
+             2. SECTION PER-DOKUMEN & PENGELOMPOKAN (GABUNG / PISAH)
              ==================================================================== -->
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                <i class="bi bi-collection-fill text-primary"></i>
-                Daftar Dokumen Pengajuan ({{ doc_count }} Berkas CIPL)
-            </h5>
-            <span class="text-muted small">Tujuan, B/L, Transportasi, dan Data Barang spesifik per-dokumen</span>
+        <div class="card p-3 mb-4 rounded-3 border shadow-sm bg-white">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                        <i class="bi bi-collection-fill text-primary"></i>
+                        Daftar Berkas CIPL ({{ doc_count }} Berkas Diunggah)
+                    </h5>
+                    <div class="text-muted small">
+                        Atur penggabungan (konsolidasi) beberapa berkas ke dalam 1 No. Aju atau buat masing-masing No. Aju terpisah.
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 fw-semibold" id="groupSummaryBadge">
+                        <i class="bi bi-layers-half me-1"></i> <span id="uniqueGroupCount">{{ doc_count }}</span> No. Aju Siap Dibuat
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-success fw-bold px-3 py-2 rounded-3 shadow-sm" onclick="mergeAllDocsToOneGroup();">
+                        <i class="bi bi-link-45deg fs-5 me-1"></i> Gabung Semua Jadi 1 No. Aju
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-2 rounded-3" onclick="splitAllDocsToUniqueGroups();">
+                        <i class="bi bi-scissors me-1"></i> Pisahkan Semua (1 File = 1 Aju)
+                    </button>
+                </div>
+            </div>
         </div>
 
         {% for doc in documents %}
@@ -390,7 +407,7 @@
             <!-- Card Header -->
             <div class="card-doc-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">DOKUMEN #{{ loop.index }}</span>
+                    <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">BERKAS #{{ loop.index }}</span>
                     <strong class="text-dark fs-6"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> {{ doc.filename }}</strong>
                     <span class="badge bg-light text-dark border">Inv: {{ doc.invoice_no }}</span>
                 </div>
@@ -404,12 +421,35 @@
 
             <!-- Card Body -->
             <div class="p-3 p-md-4">
+                <!-- PILIHAN PENGELOMPOKAN NOMOR AJU (GABUNG / PISAH) -->
+                <div class="p-2 px-3 rounded-3 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: #eff6ff; border: 1px solid #bfdbfe;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary px-2 py-1"><i class="bi bi-diagram-3-fill me-1"></i> Pengelompokan Aju</span>
+                        <span class="small fw-bold text-dark">Alokasikan Berkas Ini ke:</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <select class="form-select form-select-sm fw-bold text-primary shadow-none doc-group-selector" 
+                                id="doc_{{ d_idx }}_group" name="doc_{{ d_idx }}_group" 
+                                onchange="onDocGroupChanged({{ d_idx }});" 
+                                style="max-width: 230px; border: 2px solid #3b82f6; background-color: #ffffff;">
+                            {% for g in range(1, doc_count + 1) %}
+                            <option value="{{ g }}" {% if (doc.group_id|string) == (g|string) or (not doc.group_id and loop.index == g) %}selected{% endif %}>
+                                📦 Nomor Pengajuan #{{ g }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <span class="badge bg-white text-secondary border small py-1 px-2 group-status-badge" id="group_status_badge_{{ d_idx }}">
+                            Aju Mandiri #{{ loop.index }}
+                        </span>
+                    </div>
+                </div>
+
                 <!-- 1. NOMOR AJU KHUSUS DOKUMEN INI -->
                 <div class="p-3 rounded-3 mb-3" style="background: #fefce8; border: 1px solid #fef08a;">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge-yellow"><i class="bi bi-bookmark-star-fill me-1"></i> WARNA KUNING</span>
-                            <strong class="text-dark small">Nomor Pengajuan PEB Dokumen #{{ loop.index }} (26 Digit CEISA):</strong>
+                            <strong class="text-dark small">Nomor Pengajuan PEB Berkas #{{ loop.index }} (26 Digit CEISA):</strong>
                         </div>
                         <span class="badge bg-warning bg-opacity-25 text-dark border border-warning fw-bold" style="font-size: 0.75rem;">
                             <i class="bi bi-lock-fill text-warning me-1"></i> Prefix 000030ZIK480 Tetap
@@ -841,5 +881,60 @@
         }
         updateDocAjuPreview(idx);
     }
+
+    // =========================================================================
+    // FITUR PENGGABUNGAN & PEMISAHAN DOKUMEN (MERGE / SPLIT GROUPS)
+    // =========================================================================
+    function updateAllGroupStatuses() {
+        const groupSelects = document.querySelectorAll('.doc-group-selector');
+        if (!groupSelects || groupSelects.length === 0) return;
+
+        const groupCounts = {};
+        groupSelects.forEach(sel => {
+            const val = sel.value;
+            groupCounts[val] = (groupCounts[val] || 0) + 1;
+        });
+
+        const uniqueGroups = Object.keys(groupCounts).length;
+        const countSpan = document.getElementById('uniqueGroupCount');
+        if (countSpan) countSpan.innerText = uniqueGroups;
+
+        groupSelects.forEach((sel, idx) => {
+            const val = sel.value;
+            const badge = document.getElementById(`group_status_badge_${idx}`);
+            if (!badge) return;
+            if (groupCounts[val] > 1) {
+                badge.className = 'badge bg-success text-white border-0 small py-1 px-2 group-status-badge';
+                badge.innerHTML = `<i class="bi bi-link-45deg"></i> Digabung (${groupCounts[val]} Berkas di No. Aju #${val})`;
+            } else {
+                badge.className = 'badge bg-light text-muted border small py-1 px-2 group-status-badge';
+                badge.innerText = `Aju Mandiri #${val}`;
+            }
+        });
+    }
+
+    function onDocGroupChanged(idx) {
+        updateAllGroupStatuses();
+    }
+
+    function mergeAllDocsToOneGroup() {
+        const groupSelects = document.querySelectorAll('.doc-group-selector');
+        groupSelects.forEach(sel => {
+            sel.value = '1';
+        });
+        updateAllGroupStatuses();
+    }
+
+    function splitAllDocsToUniqueGroups() {
+        const groupSelects = document.querySelectorAll('.doc-group-selector');
+        groupSelects.forEach((sel, idx) => {
+            sel.value = (idx + 1).toString();
+        });
+        updateAllGroupStatuses();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateAllGroupStatuses();
+    });
 </script>
 {% endblock %}

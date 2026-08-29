@@ -11,7 +11,9 @@ from werkzeug.utils import secure_filename
 from app.services.draf_peb_service import (
     parse_cipl_file_for_draf_peb,
     parse_multiple_cipl_files_for_draf_peb,
-    generate_draf_peb_excel
+    generate_draf_peb_excel,
+    consolidate_cipl_documents,
+    format_iso_date
 )
 
 draf_bp = Blueprint('draf_peb', __name__)
@@ -129,8 +131,11 @@ def generate():
         # 2. UPDATE PARAMETER KHUSUS TIAP DOKUMEN DARI FORM
         prefix_aju = "000030ZIK480"
         for idx, doc in enumerate(documents):
+            # Ambil group_id (default: str(idx + 1))
+            doc["group_id"] = request.form.get(f"doc_{idx}_group", doc.get("group_id", str(idx + 1))).strip()
+
             # Ambil override nomor aju (Date + Seq)
-            date_part = request.form.get(f"doc_{idx}_date", doc.get("date_8digit", "20260814")).strip()
+            date_part = request.form.get(f"doc_{idx}_date", doc.get("date_8digit", datetime.now().strftime("%Y%m%d"))).strip()
             seq_part = request.form.get(f"doc_{idx}_seq", doc.get("seq_6digit", f"{635+idx:06d}")).strip()
             full_aju = f"{prefix_aju}{date_part}{seq_part}"
 
@@ -142,7 +147,7 @@ def generate():
             if request.form.get(f"doc_{idx}_invoice_no"):
                 doc["invoice_no"] = request.form.get(f"doc_{idx}_invoice_no").strip()
             if request.form.get(f"doc_{idx}_invoice_date"):
-                doc["invoice_date"] = request.form.get(f"doc_{idx}_invoice_date").strip()
+                doc["invoice_date"] = format_iso_date(request.form.get(f"doc_{idx}_invoice_date").strip())
                 doc["packing_list_date"] = doc["invoice_date"]
 
             # Per-Dokumen: Negara & Pelabuhan Tujuan
@@ -151,7 +156,7 @@ def generate():
 
             # Per-Dokumen: Dokumen B/L & Tanggal B/L
             doc["bl_no"] = request.form.get(f"doc_{idx}_bl_no", doc.get("bl_no", "ONEYJKTG65320402")).strip()
-            doc["bl_date"] = request.form.get(f"doc_{idx}_bl_date", doc.get("bl_date", "2026-08-21")).strip()
+            doc["bl_date"] = format_iso_date(request.form.get(f"doc_{idx}_bl_date", doc.get("bl_date", "2026-08-21")).strip())
 
             # Per-Dokumen: Penerima / Consignee
             doc["consignee_name"] = request.form.get(f"doc_{idx}_consignee_name", doc.get("consignee_name", "")).strip()
@@ -183,17 +188,27 @@ def generate():
             if request.form.get(f"doc_{idx}_qty"):
                 doc["total_qty"] = int(request.form.get(f"doc_{idx}_qty", doc.get("total_qty", 0)))
 
+        # 3. KONSOLIDASI BERDASARKAN GRUP AJU (GABUNG ATAU PISAH)
+        try:
+            first_seq = int(documents[0].get("seq_6digit", 635)) if documents else 635
+        except (ValueError, TypeError):
+            first_seq = 635
+
+        consolidated_docs = consolidate_cipl_documents(documents, start_seq=first_seq)
+
         template_path = r"D:\DOC\contoh draf peb.xlsx"
-        output_excel_path = generate_draf_peb_excel(documents, global_data, template_path=template_path)
+        output_excel_path = generate_draf_peb_excel(consolidated_docs, global_data, template_path=template_path)
         excel_filename = os.path.basename(output_excel_path)
 
-        flash(f"Draf PEB Konsolidasi ({len(documents)} Pengajuan) berhasil digenerasi dengan format resmi CEISA!", "success")
+        flash(f"Draf PEB Konsolidasi ({len(consolidated_docs)} No. Pengajuan dari {len(documents)} berkas CIPL) berhasil digenerasi dengan format resmi CEISA!", "success")
         return render_template(
             'draf_peb.html',
             step='result',
             excel_filename=excel_filename,
-            documents=documents,
-            doc_count=len(documents),
+            documents=consolidated_docs,
+            raw_documents=documents,
+            doc_count=len(consolidated_docs),
+            raw_doc_count=len(documents),
             global_data=global_data,
             documents_json=json.dumps(documents),
             global_data_json=json.dumps(global_data)

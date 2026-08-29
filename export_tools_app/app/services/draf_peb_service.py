@@ -304,6 +304,7 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
         "date_8digit": date_8digit,
         "seq_6digit": seq_str,
         "nomor_aju": default_full_aju,
+        "group_id": "1",
         "country": iso_country,
         "pelabuhan_tujuan": "USCHS",
         "etd": etd_iso,
@@ -331,14 +332,85 @@ def parse_cipl_file_for_draf_peb(file_path: str, base_seq: int = 635) -> Dict[st
     }
 
 
+def consolidate_cipl_documents(documents: List[Dict[str, Any]], start_seq: int = 635) -> List[Dict[str, Any]]:
+    """
+    Mengonsolidasi/menggabungkan kumpulan dokumen CIPL berdasarkan grup pengajuan (group_id).
+    Jika beberapa dokumen berada pada group_id yang sama, item barang digabungkan,
+    bobot/FOB/Qty diakumulasikan, dan invoice-invoice dicatat ke dalam satu dokumen aju.
+    """
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for doc in documents:
+        gid = str(doc.get("group_id", "")).strip() or doc.get("filename", "")
+        groups[gid].append(doc)
+
+    consolidated = []
+    prefix_aju = "000030ZIK480"
+
+    for g_idx, (gid, doc_list) in enumerate(groups.items()):
+        current_seq_num = start_seq + g_idx
+        seq_str = f"{current_seq_num:06d}"
+        first_doc = doc_list[0]
+        date_8digit = first_doc.get("date_8digit", datetime.now().strftime("%Y%m%d"))
+        full_aju = first_doc.get("nomor_aju") or f"{prefix_aju}{date_8digit}{seq_str}"
+
+        if len(doc_list) == 1:
+            doc = copy.deepcopy(first_doc)
+            doc["group_id"] = gid
+            doc["seq_6digit"] = seq_str
+            doc["nomor_aju"] = full_aju
+            doc["sub_docs"] = [copy.deepcopy(first_doc)]
+            consolidated.append(doc)
+        else:
+            # Merge multiple documents into 1 consolidated document
+            all_items = []
+            for d in doc_list:
+                all_items.extend(copy.deepcopy(d.get("items", [])))
+
+            total_qty = sum(int(d.get("total_qty", 0) or 0) for d in doc_list)
+            total_fob = round(sum(float(d.get("total_fob", 0.0) or 0.0) for d in doc_list), 2)
+            total_nw = round(sum(float(d.get("total_nw", 0.0) or d.get("netto", 0.0) or 0.0) for d in doc_list), 2)
+            total_gw = round(sum(float(d.get("total_gw", 0.0) or d.get("bruto", 0.0) or 0.0) for d in doc_list), 2)
+            total_vol = round(sum(float(d.get("total_volume", 0.0) or d.get("cbm", 0.0) or 0.0) for d in doc_list), 3)
+
+            merged_filenames = " + ".join(d.get("filename", "") for d in doc_list)
+            merged_inv_nos = ", ".join(d.get("invoice_no", "") for d in doc_list if d.get("invoice_no"))
+
+            merged_doc = copy.deepcopy(first_doc)
+            merged_doc["group_id"] = gid
+            merged_doc["filename"] = merged_filenames
+            merged_doc["invoice_no"] = merged_inv_nos
+            merged_doc["seq_6digit"] = seq_str
+            merged_doc["nomor_aju"] = full_aju
+            merged_doc["total_qty"] = total_qty
+            merged_doc["total_fob"] = total_fob
+            merged_doc["total_nw"] = total_nw
+            merged_doc["total_gw"] = total_gw
+            merged_doc["gross_weight"] = total_gw
+            merged_doc["net_weight"] = total_nw
+            merged_doc["bruto"] = total_gw
+            merged_doc["netto"] = total_nw
+            merged_doc["total_volume"] = total_vol
+            merged_doc["volume"] = total_vol
+            merged_doc["cbm"] = total_vol
+            merged_doc["items"] = all_items
+            merged_doc["sub_docs"] = copy.deepcopy(doc_list)
+            consolidated.append(merged_doc)
+
+    return consolidated
+
+
 def parse_multiple_cipl_files_for_draf_peb(file_paths: List[str], start_seq: int = 635) -> List[Dict[str, Any]]:
     """
     Mengekstrak kumpulan file CIPL secara batch dengan nomor urut auto-increment.
+    Setiap dokumen diberi group_id awal yang mandiri (1, 2, 3, dst).
     """
     docs = []
     for idx, path in enumerate(file_paths):
         current_seq = start_seq + idx
         doc = parse_cipl_file_for_draf_peb(path, base_seq=current_seq)
+        doc["group_id"] = str(idx + 1)
+        doc["file_index"] = idx
         docs.append(doc)
     return docs
 
@@ -613,36 +685,61 @@ def generate_draf_peb_excel(
             bl_date_iso = format_iso_date(doc.get("bl_date") or doc.get("etd") or inv_date_iso)
 
             # Dokumen 1: Surat Ijin Pabean / Keputusan (920)
+            seri_doc = 1
             ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
-            ws_d.cell(row=cur_doc_r, column=2, value=1)
+            ws_d.cell(row=cur_doc_r, column=2, value=seri_doc)
             ws_d.cell(row=cur_doc_r, column=3, value="920")
             ws_d.cell(row=cur_doc_r, column=4, value="76/MK/WBC.07/2026")
             ws_d.cell(row=cur_doc_r, column=5, value="2026-04-28")
             cur_doc_r += 1
+            seri_doc += 1
 
             # Dokumen 2: B/L (705)
             ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
-            ws_d.cell(row=cur_doc_r, column=2, value=2)
+            ws_d.cell(row=cur_doc_r, column=2, value=seri_doc)
             ws_d.cell(row=cur_doc_r, column=3, value="705")
             ws_d.cell(row=cur_doc_r, column=4, value=bl_no)
             ws_d.cell(row=cur_doc_r, column=5, value=bl_date_iso)
             cur_doc_r += 1
+            seri_doc += 1
 
-            # Dokumen 3: Packing List (217)
-            ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
-            ws_d.cell(row=cur_doc_r, column=2, value=4)
-            ws_d.cell(row=cur_doc_r, column=3, value="217")
-            ws_d.cell(row=cur_doc_r, column=4, value=inv_no)
-            ws_d.cell(row=cur_doc_r, column=5, value=inv_date_iso)
-            cur_doc_r += 1
+            # Dokumen Invoice & Packing List (bisa 1 atau banyak berkas CIPL yang digabung)
+            sub_docs = doc.get("sub_docs")
+            if not sub_docs:
+                inv_list = [{
+                    "inv_no": doc.get("invoice_no", "ID2608-8141"),
+                    "inv_date": format_iso_date(doc.get("invoice_date", "2026-08-14")),
+                    "pl_date": format_iso_date(doc.get("packing_list_date") or doc.get("invoice_date", "2026-08-14"))
+                }]
+            else:
+                inv_list = []
+                for sd in sub_docs:
+                    sd_inv = sd.get("invoice_no", doc.get("invoice_no", "ID2608-8141"))
+                    if sd_inv:
+                        inv_list.append({
+                            "inv_no": sd_inv,
+                            "inv_date": format_iso_date(sd.get("invoice_date") or doc.get("invoice_date", "2026-08-14")),
+                            "pl_date": format_iso_date(sd.get("packing_list_date") or sd.get("invoice_date") or doc.get("invoice_date", "2026-08-14"))
+                        })
 
-            # Dokumen 4: Invoice (380)
-            ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
-            ws_d.cell(row=cur_doc_r, column=2, value=3)
-            ws_d.cell(row=cur_doc_r, column=3, value="380")
-            ws_d.cell(row=cur_doc_r, column=4, value=inv_no)
-            ws_d.cell(row=cur_doc_r, column=5, value=inv_date_iso)
-            cur_doc_r += 1
+            for inv_item in inv_list:
+                # Packing List (217)
+                ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
+                ws_d.cell(row=cur_doc_r, column=2, value=seri_doc)
+                ws_d.cell(row=cur_doc_r, column=3, value="217")
+                ws_d.cell(row=cur_doc_r, column=4, value=inv_item["inv_no"])
+                ws_d.cell(row=cur_doc_r, column=5, value=inv_item["pl_date"])
+                cur_doc_r += 1
+                seri_doc += 1
+
+                # Invoice (380)
+                ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
+                ws_d.cell(row=cur_doc_r, column=2, value=seri_doc)
+                ws_d.cell(row=cur_doc_r, column=3, value="380")
+                ws_d.cell(row=cur_doc_r, column=4, value=inv_item["inv_no"])
+                ws_d.cell(row=cur_doc_r, column=5, value=inv_item["inv_date"])
+                cur_doc_r += 1
+                seri_doc += 1
 
     # =========================================================================
     # 4. UPDATE SHEET: PENGANGKUT (1 Baris per Aju)
