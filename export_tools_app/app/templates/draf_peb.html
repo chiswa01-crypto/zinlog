@@ -290,19 +290,19 @@
                 <!-- Baris 1: Kantor Pabean -->
                 <div class="col-md-4">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor" name="global_kode_kantor" value="040300" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor" name="global_kode_kantor" value="{{ (global_data and global_data.kode_kantor) or '040300' }}" style="background: #ffffff;">
                         <label>Kode Kantor Pabean (040300)</label>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor_periksa" name="global_kode_kantor_periksa" value="150300" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor_periksa" name="global_kode_kantor_periksa" value="{{ (global_data and global_data.kode_kantor_periksa) or '150300' }}" style="background: #ffffff;">
                         <label>Kode Kantor Periksa (150300)</label>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor_ekspor" name="global_kode_kantor_ekspor" value="040300" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_kantor_ekspor" name="global_kode_kantor_ekspor" value="{{ (global_data and global_data.kode_kantor_ekspor) or '040300' }}" style="background: #ffffff;">
                         <label>Kode Kantor Ekspor (040300)</label>
                     </div>
                 </div>
@@ -310,25 +310,25 @@
                 <!-- Baris 2: Pelabuhan & Asal Barang -->
                 <div class="col-md-3">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_pelabuhan_muat" name="global_pelabuhan_muat" value="IDTPP" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_pelabuhan_muat" name="global_pelabuhan_muat" value="{{ (global_data and global_data.pelabuhan_muat) or 'IDTPP' }}" style="background: #ffffff;">
                         <label>Pelabuhan Muat (IDTPP)</label>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_pelabuhan_ekspor" name="global_pelabuhan_ekspor" value="IDTPP" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_pelabuhan_ekspor" name="global_pelabuhan_ekspor" value="{{ (global_data and global_data.pelabuhan_ekspor) or 'IDTPP' }}" style="background: #ffffff;">
                         <label>Pelabuhan Ekspor (IDTPP)</label>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_kode_daerah_asal" name="global_kode_daerah_asal" value="3603" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_daerah_asal" name="global_kode_daerah_asal" value="{{ (global_data and global_data.kode_daerah_asal) or '3603' }}" style="background: #ffffff;">
                         <label>Kode Daerah Asal (3603)</label>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_kode_negara_asal" name="global_kode_negara_asal" value="ID" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_kode_negara_asal" name="global_kode_negara_asal" value="{{ (global_data and global_data.kode_negara_asal) or 'ID' }}" style="background: #ffffff;">
                         <label>Kode Negara Asal (ID)</label>
                     </div>
                 </div>
@@ -336,31 +336,31 @@
                 <!-- Baris 3: Kurs & Pernyataan Pabean -->
                 <div class="col-md-2">
                     <div class="form-floating">
-                        <input type="number" step="0.01" class="form-control fw-semibold" id="global_ndpbm_kurs" name="global_ndpbm_kurs" value="17960" style="background: #ffffff;">
+                        <input type="number" step="0.01" class="form-control fw-semibold" id="global_ndpbm_kurs" name="global_ndpbm_kurs" value="{{ (global_data and global_data.ndpbm_kurs) or '17960' }}" style="background: #ffffff;">
                         <label>Kurs NDPBM (Rp)</label>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-floating">
-                        <input type="date" class="form-control fw-semibold" id="global_tanggal_periksa" name="global_tanggal_periksa" value="{{ today_date }}" style="background: #ffffff;">
+                        <input type="date" class="form-control fw-semibold" id="global_tanggal_periksa" name="global_tanggal_periksa" value="{{ (global_data and global_data.tanggal_periksa) or today_date }}" style="background: #ffffff;">
                         <label>Tanggal Periksa</label>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_kota_pernyataan" name="global_kota_pernyataan" value="TANGERANG" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_kota_pernyataan" name="global_kota_pernyataan" value="{{ (global_data and global_data.kota_pernyataan) or 'TANGERANG' }}" style="background: #ffffff;">
                         <label>Kota Pernyataan</label>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_nama_pernyataan" name="global_nama_pernyataan" value="EUN SUN KANG" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_nama_pernyataan" name="global_nama_pernyataan" value="{{ (global_data and global_data.nama_pernyataan) or 'EUN SUN KANG' }}" style="background: #ffffff;">
                         <label>Nama Penandatangan</label>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-floating">
-                        <input type="text" class="form-control fw-semibold" id="global_jabatan_pernyataan" name="global_jabatan_pernyataan" value="MANAGER" style="background: #ffffff;">
+                        <input type="text" class="form-control fw-semibold" id="global_jabatan_pernyataan" name="global_jabatan_pernyataan" value="{{ (global_data and global_data.jabatan_pernyataan) or 'MANAGER' }}" style="background: #ffffff;">
                         <label>Jabatan</label>
                     </div>
                 </div>
@@ -621,13 +621,24 @@
                     </div>
                 </div>
 
-                <!-- DOWNLOAD BUTTON -->
-                <div class="d-flex flex-wrap justify-content-center gap-3">
+                <!-- ACTION BUTTONS: DOWNLOAD, RE-EDIT, BUAT BARU -->
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
                     <a href="{{ url_for('draf_peb.download_file', filename=excel_filename) }}" 
                        class="btn btn-success btn-lg px-5 py-3 fw-bold rounded-4 shadow-lg d-inline-flex align-items-center gap-2">
                         <i class="bi bi-download fs-4"></i>
                         <span>Download Draf PEB (.xlsx)</span>
                     </a>
+
+                    <!-- Tombol Edit / Revisi Data Lagi -->
+                    <form action="{{ url_for('draf_peb.re_edit') }}" method="POST" class="d-inline m-0">
+                        <input type="hidden" name="documents_json" value='{{ documents_json }}'>
+                        <input type="hidden" name="global_data_json" value='{{ global_data_json }}'>
+                        <button type="submit" class="btn btn-warning btn-lg px-4 py-3 rounded-4 fw-bold shadow d-inline-flex align-items-center gap-2 text-dark">
+                            <i class="bi bi-pencil-square fs-5"></i>
+                            <span>Edit / Revisi Data Lagi</span>
+                        </button>
+                    </form>
+
                     <a href="{{ url_for('draf_peb.index') }}" 
                        class="btn btn-outline-secondary btn-lg px-4 py-3 rounded-4 fw-semibold">
                         <i class="bi bi-arrow-repeat me-1"></i> Buat Draf Baru

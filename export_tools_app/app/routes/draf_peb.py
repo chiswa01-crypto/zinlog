@@ -194,11 +194,47 @@ def generate():
             excel_filename=excel_filename,
             documents=documents,
             doc_count=len(documents),
-            global_data=global_data
+            global_data=global_data,
+            documents_json=json.dumps(documents),
+            global_data_json=json.dumps(global_data)
         )
     except Exception as e:
         flash(f"Gagal menggenerasi Draf PEB: {str(e)}", "danger")
         return redirect(url_for('draf_peb.index'))
+
+
+@draf_bp.route('/re-edit', methods=['POST'])
+@draf_bp.route('/re-edit/', methods=['POST'])
+def re_edit():
+    """
+    Mengembalikan tampilan ke form editor dengan seluruh data yang telah disesuaikan sebelumnya.
+    """
+    docs_json = request.form.get('documents_json', '[]')
+    global_json = request.form.get('global_data_json', '{}')
+    try:
+        documents = json.loads(docs_json)
+    except Exception:
+        documents = []
+
+    try:
+        global_data = json.loads(global_json)
+    except Exception:
+        global_data = {}
+
+    if not documents:
+        flash("Data dokumen tidak ditemukan.", "warning")
+        return redirect(url_for('draf_peb.index'))
+
+    flash("Silakan tinjau dan perbaiki data yang ingin diubah, lalu klik Generate kembali.", "info")
+    return render_template(
+        'draf_peb.html',
+        step='edit',
+        documents=documents,
+        doc_count=len(documents),
+        documents_json=json.dumps(documents),
+        global_data=global_data,
+        today_date=global_data.get('tanggal_pernyataan', datetime.now().strftime("%Y-%m-%d"))
+    )
 
 
 @draf_bp.route('/download/<filename>', methods=['GET'])
