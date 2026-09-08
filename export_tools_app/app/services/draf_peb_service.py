@@ -783,21 +783,21 @@ def generate_draf_peb_excel(
                         })
 
             for inv_item in inv_list:
-                # Packing List (217)
-                ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
-                ws_d.cell(row=cur_doc_r, column=2, value=seri_doc)
-                ws_d.cell(row=cur_doc_r, column=3, value="217")
-                ws_d.cell(row=cur_doc_r, column=4, value=inv_item["inv_no"])
-                ws_d.cell(row=cur_doc_r, column=5, value=inv_item["pl_date"])
-                cur_doc_r += 1
-                seri_doc += 1
-
                 # Invoice (380)
                 ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
                 ws_d.cell(row=cur_doc_r, column=2, value=seri_doc)
                 ws_d.cell(row=cur_doc_r, column=3, value="380")
                 ws_d.cell(row=cur_doc_r, column=4, value=inv_item["inv_no"])
                 ws_d.cell(row=cur_doc_r, column=5, value=inv_item["inv_date"])
+                cur_doc_r += 1
+                seri_doc += 1
+
+                # Packing List (217)
+                ws_d.cell(row=cur_doc_r, column=1, value=no_aju)
+                ws_d.cell(row=cur_doc_r, column=2, value=seri_doc)
+                ws_d.cell(row=cur_doc_r, column=3, value="217")
+                ws_d.cell(row=cur_doc_r, column=4, value=inv_item["inv_no"])
+                ws_d.cell(row=cur_doc_r, column=5, value=inv_item["pl_date"])
                 cur_doc_r += 1
                 seri_doc += 1
 
