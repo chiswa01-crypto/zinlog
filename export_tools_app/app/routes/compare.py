@@ -9,7 +9,7 @@ from flask import Blueprint, render_template, request, flash, send_file, redirec
 from werkzeug.utils import secure_filename
 
 # Ensure root dir is in sys.path
-root_dir = r"d:/new project"
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
@@ -33,7 +33,8 @@ def index():
         peb_files = request.files.getlist('peb_files') or request.files.getlist('npe_file')
         cipl_files = request.files.getlist('cipl_files') or request.files.getlist('cipl_file')
 
-        upload_dir = r"d:/new project/export_tools_app/uploads"
+        from flask import current_app
+        upload_dir = current_app.config.get('UPLOAD_FOLDER', os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'uploads'))
         os.makedirs(upload_dir, exist_ok=True)
 
         saved_peb_paths = []
