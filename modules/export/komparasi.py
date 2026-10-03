@@ -2671,7 +2671,9 @@ def process_mass_reconciliation(peb_file_paths: List[str], cipl_file_paths: List
     # 4. Export ke Excel Multi-Sheet (Sheet 1 Summary & Sheet Master Header Dinamis per Dokumen)
     if not output_path:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_dir = r"d:/new project/export_tools_app/uploads"
+        base = os.path.dirname(__file__)
+        out_dir = os.path.abspath(os.path.join(base, '..', '..', 'export_tools_app', 'uploads')) if os.path.exists(os.path.join(base, '..', '..', 'export_tools_app')) else os.path.abspath(os.path.join(base, '..', 'uploads'))
+        os.makedirs(out_dir, exist_ok=True)
         output_path = os.path.join(out_dir, f"Format_Komparasi_Massal_Database_{ts}.xlsx")
 
     excel_file = export_komparasi_to_excel(reconciliation_res, output_path)

@@ -67,7 +67,9 @@ def index():
 @compare_bp.route('/download/<filename>')
 def download_excel(filename):
     """Mengunduh file Excel hasil komparasi massal."""
-    file_path = os.path.join(r"d:/new project/export_tools_app/uploads", secure_filename(filename))
+    from flask import current_app
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'uploads')))
+    file_path = os.path.join(upload_folder, secure_filename(filename))
     if os.path.exists(file_path):
         return send_file(file_path, as_attachment=True)
     flash('File hasil komparasi tidak ditemukan.', 'danger')

@@ -581,7 +581,9 @@ def process_cipl_document(
 
     if not output_excel_path:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_dir = r"d:/new project/export_tools_app/uploads"
+        base = os.path.dirname(__file__)
+        out_dir = os.path.abspath(os.path.join(base, 'export_tools_app', 'uploads')) if os.path.exists(os.path.join(base, 'export_tools_app')) else os.path.abspath(os.path.join(base, '..', 'uploads'))
+        os.makedirs(out_dir, exist_ok=True)
         output_excel_path = os.path.join(out_dir, f"Laporan_CIPL_{ts}.xlsx")
 
     written_file = export_to_excel(all_flat_items, template_excel_path, output_excel_path)

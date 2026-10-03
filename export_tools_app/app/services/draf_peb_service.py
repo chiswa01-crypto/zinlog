@@ -993,7 +993,7 @@ def generate_draf_peb_excel(
 
     if not output_path:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_dir = r"d:/new project/export_tools_app/uploads"
+        out_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'uploads'))
         os.makedirs(out_dir, exist_ok=True)
         count_tag = f"{len(documents)}_Aju" if len(documents) > 1 else "1_Aju"
         output_path = os.path.join(out_dir, f"Draf_PEB_{count_tag}_{ts}.xlsx")
@@ -1011,7 +1011,7 @@ def create_zip_bundle(file_paths: List[str], zip_output_path: Optional[str] = No
     import zipfile
     if not zip_output_path:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_dir = r"d:/new project/export_tools_app/uploads"
+        out_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'uploads'))
         os.makedirs(out_dir, exist_ok=True)
         zip_output_path = os.path.join(out_dir, f"Draf_PEB_Bundle_{len(file_paths)}_Files_{ts}.zip")
 
