@@ -200,12 +200,11 @@ def generate():
             egrp = str(doc.get("excel_group", "1")).strip() or "1"
             excel_groups[egrp].append(doc)
 
-        template_path = r"D:\DOC\contoh draf peb.xlsx"
         generated_files = []
         generated_paths = []
 
         for g_idx, (egrp_id, g_docs) in enumerate(excel_groups.items()):
-            out_excel_path = generate_draf_peb_excel(g_docs, global_data, template_path=template_path)
+            out_excel_path = generate_draf_peb_excel(g_docs, global_data)
             fname = os.path.basename(out_excel_path)
             generated_paths.append(out_excel_path)
             generated_files.append({

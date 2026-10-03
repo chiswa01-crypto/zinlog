@@ -86,14 +86,17 @@ def generate_npe_peb_excel(parsed_docs: List[Dict[str, Any]], template_path: str
     """
     Menghasilkan file Excel Laporan Realisasi Ekspor NPE/PEB persis sesuai master template D:\\DOC\\data real.xlsx
     """
-    if not os.path.exists(template_path):
+    if not template_path or not os.path.exists(template_path):
         # Fallback lokasi alternatif
         alt_paths = [
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'data real.xlsx'),
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'data_real_template.xlsx'),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'data real.xlsx')),
+            os.path.join(os.getcwd(), 'data real.xlsx'),
             r"D:\DOC\data real.xlsx",
-            r"d:/new project/data real.xlsx",
-            r"d:/new project/export_tools_app/app/static/templates/data_real_template.xlsx"
+            r"d:/new project/data real.xlsx"
         ]
-        template_path = next((p for p in alt_paths if os.path.exists(p)), template_path)
+        template_path = next((p for p in alt_paths if os.path.exists(p)), alt_paths[0])
 
     wb = openpyxl.load_workbook(template_path)
     ws = wb['bulan'] if 'bulan' in wb.sheetnames else wb.active
@@ -529,8 +532,5 @@ def generate_npe_excel_from_template(parsed_docs: List[Dict[str, Any]], template
     upload_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'uploads'))
     os.makedirs(upload_folder, exist_ok=True)
     output_path = os.path.join(upload_folder, output_filename)
-
-    if not template_path:
-        template_path = r"D:\DOC\data real.xlsx"
 
     return generate_npe_peb_excel(parsed_docs, template_path, output_path)

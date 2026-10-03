@@ -567,7 +567,7 @@ def _parse_cipl_excel(excel_path: str) -> List[Dict[str, Any]]:
 def generate_draf_peb_excel(
     documents_input: Union[List[Dict[str, Any]], Dict[str, Any]],
     global_data: Dict[str, Any],
-    template_path: str = r"D:\DOC\contoh draf peb.xlsx",
+    template_path: Optional[str] = None,
     output_path: Optional[str] = None
 ) -> str:
     """
@@ -577,12 +577,23 @@ def generate_draf_peb_excel(
     if not openpyxl:
         raise ImportError("openpyxl belum terpasang.")
 
-    if not os.path.exists(template_path):
-        alt_path = r"d:/new project/contoh draf peb.xlsx"
-        if os.path.exists(alt_path):
-            template_path = alt_path
-        else:
-            raise FileNotFoundError(f"Templat acuan Draf PEB tidak ditemukan: {template_path}")
+    # Prioritas pencarian templat contoh draf peb.xlsx
+    candidates = []
+    if template_path:
+        candidates.append(template_path)
+    
+    candidates.extend([
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'contoh draf peb.xlsx'),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'contoh draf peb.xlsx')),
+        os.path.join(os.getcwd(), 'contoh draf peb.xlsx'),
+        r"D:\DOC\contoh draf peb.xlsx",
+        r"d:/new project/contoh draf peb.xlsx"
+    ])
+    
+    resolved_template = next((p for p in candidates if os.path.exists(p)), None)
+    if not resolved_template:
+        raise FileNotFoundError(f"Templat acuan Draf PEB (contoh draf peb.xlsx) tidak ditemukan di sistem. Jalur yang dicoba: {candidates[:3]}")
+    template_path = resolved_template
 
     # Normalisasi documents_input ke list
     if isinstance(documents_input, dict):
