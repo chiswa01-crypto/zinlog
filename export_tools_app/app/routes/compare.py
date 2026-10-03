@@ -1,7 +1,6 @@
 # ==============================================================================
-# [LOCKED MODULE - MASS COMPARISON]
-# STATUS: FROZEN / READ-ONLY DURING REALISASI MODULE DEVELOPMENT
-# DO NOT MODIFY THIS FILE.
+# [MODULE - MASS COMPARISON]
+# STATUS: ACTIVE
 # ==============================================================================
 import os
 import sys

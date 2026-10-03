@@ -82,7 +82,7 @@ def _format_bulan_header(parsed_docs: List[Dict[str, Any]]) -> str:
     return f"BULAN : {m_name} {yr}"
 
 
-def generate_npe_peb_excel(parsed_docs: List[Dict[str, Any]], template_path: str, output_path: str) -> str:
+def generate_npe_peb_excel(parsed_docs: List[Dict[str, Any]], template_path: str, output_path: str, start_seq: int = 1) -> str:
     """
     Menghasilkan file Excel Laporan Realisasi Ekspor NPE/PEB persis sesuai master template D:\\DOC\\data real.xlsx
     """
@@ -172,7 +172,7 @@ def generate_npe_peb_excel(parsed_docs: List[Dict[str, Any]], template_path: str
         ).strip()
     )
 
-    for idx, doc in enumerate(parsed_docs, start=1):
+    for idx, doc in enumerate(parsed_docs, start=start_seq):
         header = doc.get('header', doc)
         items = doc.get('items', [])
         if not items:
@@ -525,7 +525,7 @@ def generate_npe_peb_excel(parsed_docs: List[Dict[str, Any]], template_path: str
     return output_path
 
 
-def generate_npe_excel_from_template(parsed_docs: List[Dict[str, Any]], template_path: Optional[str] = None) -> str:
+def generate_npe_excel_from_template(parsed_docs: List[Dict[str, Any]], template_path: Optional[str] = None, start_seq: int = 1) -> str:
     """Wrapper function untuk menghasilkan file Excel dan mengembalikan filepath hasil."""
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_filename = f"Laporan_NPE_PEB_{timestamp}.xlsx"
@@ -533,4 +533,4 @@ def generate_npe_excel_from_template(parsed_docs: List[Dict[str, Any]], template
     os.makedirs(upload_folder, exist_ok=True)
     output_path = os.path.join(upload_folder, output_filename)
 
-    return generate_npe_peb_excel(parsed_docs, template_path, output_path)
+    return generate_npe_peb_excel(parsed_docs, template_path, output_path, start_seq=start_seq)

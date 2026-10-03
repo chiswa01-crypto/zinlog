@@ -38,17 +38,16 @@
             <!-- ACCORDION SIDEBAR NAVIGATION MENU -->
             <div class="sidebar-nav">
 
-                <!-- MAIN MODULE 1: EXPORT (ACTIVE & STABLE) -->
-                <div class="nav-item-group {% if request.blueprint in ['npe_peb', 'draf_peb', 'cipl', 'compare'] %}open{% endif %}">
-                    <div class="nav-header {% if request.blueprint in ['npe_peb', 'draf_peb', 'cipl', 'compare'] %}active-header{% endif %}"
-                        onclick="toggleNavGroup(this)">
+                <!-- MAIN MODULE 1: EXPORT (ACTIVE & UNLOCKED) -->
+                <div class="nav-item-group open">
+                    <div class="nav-header active-header" onclick="toggleNavGroup(this)">
                         <div class="nav-header-left">
                             <i class="bi bi-box-seam-fill text-white"></i>
                             <span>EXPORT</span>
                         </div>
                         <i class="bi bi-chevron-down nav-chevron"></i>
                     </div>
-                    <div class="nav-submenu" style="display: {% if request.blueprint in ['npe_peb', 'draf_peb', 'cipl', 'compare'] %}block{% else %}none{% endif %};">
+                    <div class="nav-submenu" style="display: block;">
                         <a href="{{ url_for('npe_peb.index') }}"
                             class="submenu-link {% if request.blueprint == 'npe_peb' %}active{% endif %}">
                             <i class="bi bi-file-earmark-text-fill icon-orange"></i>
@@ -80,7 +79,7 @@
                 </div>
 
                 <!-- MAIN MODULE 2: IMPORT -->
-                <div class="nav-item-group">
+                <div class="nav-item-group open">
                     <div class="nav-header" onclick="toggleNavGroup(this)">
                         <div class="nav-header-left">
                             <i class="bi bi-box-arrow-in-down"></i>
@@ -89,9 +88,8 @@
                         </div>
                         <i class="bi bi-chevron-down nav-chevron"></i>
                     </div>
-                    <div class="nav-submenu" style="display: none;">
-                        <a href="#" class="submenu-link"
-                            onclick="showModuleNotice('IMPORT (PIB BC 2.0)'); return false;">
+                    <div class="nav-submenu" style="display: block;">
+                        <a href="{{ url_for('npe_peb.index') }}" class="submenu-link">
                             <i class="bi bi-file-earmark-arrow-down-fill"></i>
                             <span>PIB BC 2.0</span>
                         </a>
@@ -99,15 +97,15 @@
                 </div>
 
                 <!-- MAIN MODULE 3: LOCAL -->
-                <div class="nav-item-group {% if request.blueprint == 'bc40' %}open{% endif %}">
-                    <div class="nav-header {% if request.blueprint == 'bc40' %}active-header{% endif %}" onclick="toggleNavGroup(this)">
+                <div class="nav-item-group open">
+                    <div class="nav-header active-header" onclick="toggleNavGroup(this)">
                         <div class="nav-header-left">
                             <i class="bi bi-truck text-white"></i>
                             <span>LOCAL</span>
                         </div>
                         <i class="bi bi-chevron-down nav-chevron"></i>
                     </div>
-                    <div class="nav-submenu" style="display: {% if request.blueprint == 'bc40' %}block{% else %}none{% endif %};">
+                    <div class="nav-submenu" style="display: block;">
                         <a href="{{ url_for('bc40.index') }}" class="submenu-link {% if request.blueprint == 'bc40' %}active{% endif %}">
                             <i class="bi bi-database-fill-gear icon-orange"></i>
                             <span>Database BC 4.0</span>
@@ -153,6 +151,7 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% for category, message in messages %}
+            {% if 'difreeze' not in message|lower and 'freeze' not in message|lower %}
             <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm mb-4 border-0 rounded-3"
                 role="alert">
                 {% if category == 'success' %}
@@ -163,6 +162,7 @@
                 <strong class="align-middle">{{ message }}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            {% endif %}
             {% endfor %}
             {% endif %}
             {% endwith %}

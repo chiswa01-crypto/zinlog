@@ -1,7 +1,6 @@
 # ==============================================================================
-# [LOCKED MODULE - DRAF PEB]
-# STATUS: FROZEN / READ-ONLY DURING REALISASI MODULE DEVELOPMENT
-# DO NOT MODIFY THIS FILE.
+# [MODULE - DRAF PEB]
+# STATUS: ACTIVE
 # ==============================================================================
 import os
 import json
@@ -202,9 +201,27 @@ def generate():
 
         generated_files = []
         generated_paths = []
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        os.makedirs(upload_folder, exist_ok=True)
+        timestamp_base = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         for g_idx, (egrp_id, g_docs) in enumerate(excel_groups.items()):
-            out_excel_path = generate_draf_peb_excel(g_docs, global_data)
+            if len(g_docs) == 1:
+                no_aju = secure_filename(str(g_docs[0].get("nomor_aju", "")).strip())
+                unique_fname = f"{no_aju}.xlsx" if no_aju else f"Draf_PEB_{g_idx + 1}.xlsx"
+            else:
+                first_aju = secure_filename(str(g_docs[0].get("nomor_aju", "")).strip())
+                last_aju = secure_filename(str(g_docs[-1].get("nomor_aju", "")).strip())
+                if first_aju and last_aju and first_aju != last_aju:
+                    unique_fname = f"{first_aju}_sd_{last_aju[-6:]}.xlsx"
+                elif first_aju:
+                    unique_fname = f"{first_aju}_Gabungan.xlsx"
+                else:
+                    unique_fname = f"Draf_PEB_Gabungan_{g_idx + 1}.xlsx"
+
+            out_excel_path = os.path.join(upload_folder, unique_fname)
+
+            generate_draf_peb_excel(g_docs, global_data, output_path=out_excel_path)
             fname = os.path.basename(out_excel_path)
             generated_paths.append(out_excel_path)
             generated_files.append({

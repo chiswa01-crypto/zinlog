@@ -1,7 +1,6 @@
 # ==============================================================================
-# [LOCKED MODULE - CIPL GENERATION]
-# STATUS: FROZEN / READ-ONLY DURING REALISASI MODULE DEVELOPMENT
-# DO NOT MODIFY THIS FILE.
+# [MODULE - CIPL GENERATION]
+# STATUS: ACTIVE
 # ==============================================================================
 import os
 import sys

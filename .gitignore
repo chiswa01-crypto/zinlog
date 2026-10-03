@@ -6,3 +6,7 @@ _backups/
 env/
 venv/
 *.log
+export_tools_app/uploads/*
+!export_tools_app/uploads/.gitkeep
+scratch/
+

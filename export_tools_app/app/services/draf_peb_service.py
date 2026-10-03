@@ -631,6 +631,10 @@ def generate_draf_peb_excel(
         ws_h = wb["HEADER"]
         header_template = [ws_h.cell(row=2, column=c) for c in range(1, ws_h.max_column + 1)]
 
+        for r in range(2, max(ws_h.max_row + 1, 20)):
+            for c in range(1, ws_h.max_column + 1):
+                ws_h.cell(row=r, column=c).value = None
+
         for d_idx, doc in enumerate(documents):
             cur_r = 2 + d_idx
             if cur_r > 2:
@@ -819,6 +823,10 @@ def generate_draf_peb_excel(
         ws_p = wb["PENGANGKUT"]
         p_template = [ws_p.cell(row=2, column=c) for c in range(1, ws_p.max_column + 1)]
 
+        for r in range(2, max(ws_p.max_row + 1, 20)):
+            for c in range(1, ws_p.max_column + 1):
+                ws_p.cell(row=r, column=c).value = None
+
         for d_idx, doc in enumerate(documents):
             cur_r = 2 + d_idx
             if cur_r > 2:
@@ -849,6 +857,10 @@ def generate_draf_peb_excel(
         ws_k = wb["KEMASAN"]
         k_template = [ws_k.cell(row=2, column=c) for c in range(1, ws_k.max_column + 1)]
 
+        for r in range(2, max(ws_k.max_row + 1, 20)):
+            for c in range(1, ws_k.max_column + 1):
+                ws_k.cell(row=r, column=c).value = None
+
         for d_idx, doc in enumerate(documents):
             cur_r = 2 + d_idx
             if cur_r > 2:
@@ -876,9 +888,13 @@ def generate_draf_peb_excel(
         ws_b = wb["BARANG"]
         b_template = [ws_b.cell(row=2, column=c) for c in range(1, ws_b.max_column + 1)]
 
+        for r in range(2, max(ws_b.max_row + 1, 50)):
+            for c in range(1, ws_b.max_column + 1):
+                ws_b.cell(row=r, column=c).value = None
+
         ws_be = wb["BARANGENTITAS"] if "BARANGENTITAS" in wb.sheetnames else None
         if ws_be:
-            for r in range(2, ws_be.max_row + 1):
+            for r in range(2, max(ws_be.max_row + 1, 50)):
                 for c in range(1, ws_be.max_column + 1):
                     ws_be.cell(row=r, column=c).value = None
 
@@ -992,11 +1008,10 @@ def generate_draf_peb_excel(
                     ws.cell(row=r, column=1, value=first_aju)
 
     if not output_path:
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         out_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'uploads'))
         os.makedirs(out_dir, exist_ok=True)
-        count_tag = f"{len(documents)}_Aju" if len(documents) > 1 else "1_Aju"
-        output_path = os.path.join(out_dir, f"Draf_PEB_{count_tag}_{ts}.xlsx")
+        no_aju = secure_filename(str(documents[0].get("nomor_aju", "Draf_PEB")).strip()) if documents else "Draf_PEB"
+        output_path = os.path.join(out_dir, f"{no_aju}.xlsx")
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     wb.save(output_path)

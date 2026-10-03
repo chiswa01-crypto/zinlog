@@ -1,10 +1,9 @@
 # ==============================================================================
-# [LOCKED MODULE - REALISASI NPE PEB]
-# STATUS: FROZEN / READ-ONLY DURING DATABASE BC 4.0 DEVELOPMENT
-# DO NOT MODIFY THIS FILE.
+# [MODULE - REALISASI NPE PEB]
+# STATUS: ACTIVE
 # ==============================================================================
 import os
-from flask import Blueprint, render_template, request, flash, current_app, send_file
+from flask import Blueprint, render_template, request, flash, current_app, send_file, redirect, url_for
 from werkzeug.utils import secure_filename
 from app.services.pdf_parser import parse_multiple_npe_pdfs
 from app.services.excel_handler import generate_npe_excel_from_template
@@ -12,14 +11,21 @@ from app.services.excel_handler import generate_npe_excel_from_template
 npe_bp = Blueprint('npe_peb', __name__)
 
 @npe_bp.route('/', methods=['GET', 'POST'])
+@npe_bp.route('', methods=['GET', 'POST'])
 def index():
     """
     Route handler utama modul NPE/PEB (Alur kerja simpel 3 Langkah: Upload -> Olah -> Download).
     """
     excel_filename = None
     total_files = 0
+    start_seq = 1
 
     if request.method == 'POST':
+        try:
+            start_seq = int(request.form.get('start_seq', 1) or 1)
+        except (ValueError, TypeError):
+            start_seq = 1
+
         # Tangkap file yang diunggah pengguna (bisa 1 atau banyak PDF)
         files = request.files.getlist('files')
         if not files or files[0].filename == '':
@@ -52,12 +58,12 @@ def index():
                 ]
                 template_path = next((p for p in candidate_templates if os.path.exists(p)), candidate_templates[0])
 
-                excel_filepath = generate_npe_excel_from_template(parsed_docs, template_path=template_path)
+                excel_filepath = generate_npe_excel_from_template(parsed_docs, template_path=template_path, start_seq=start_seq)
                 
                 # Ambil nama file hasil generasi Excel
                 excel_filename = os.path.basename(excel_filepath)
 
-                flash(f"Berhasil mengolah {total_files} file PDF NPE/PEB ke templat Excel terbaru (data real.xlsx)!", "success")
+                flash(f"Berhasil mengolah {total_files} file PDF NPE/PEB (No. Urut Mulai: {start_seq}) ke templat Excel terbaru!", "success")
             except Exception as e:
                 flash(f"Gagal mengolah file PDF: {str(e)}", "danger")
             finally:
@@ -71,7 +77,7 @@ def index():
         else:
             flash("Silakan pilih minimal 1 file PDF NPE/PEB untuk diunggah.", "warning")
 
-    return render_template('npe_peb.html', excel_filename=excel_filename, total_files=total_files)
+    return render_template('npe_peb.html', excel_filename=excel_filename, total_files=total_files, start_seq=start_seq)
 
 
 @npe_bp.route('/download/<filename>', methods=['GET'])
