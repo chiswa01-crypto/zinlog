@@ -21,7 +21,7 @@ import glob
 import logging
 from datetime import datetime
 from collections import defaultdict
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple, Union
 
 try:
     import pandas as pd
