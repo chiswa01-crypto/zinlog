@@ -577,22 +577,24 @@ def generate_draf_peb_excel(
     if not openpyxl:
         raise ImportError("openpyxl belum terpasang.")
 
-    # Prioritas pencarian templat contoh draf peb.xlsx
+    # Prioritas pencarian templat contoh templet.xlsx
     candidates = []
     if template_path:
         candidates.append(template_path)
     
     candidates.extend([
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'contoh draf peb.xlsx'),
-        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'contoh draf peb.xlsx')),
-        os.path.join(os.getcwd(), 'contoh draf peb.xlsx'),
-        r"D:\DOC\contoh draf peb.xlsx",
-        r"d:/new project/contoh draf peb.xlsx"
+        r"d:\new project\contoh templet.xlsx",
+        r"d:/new project/contoh templet.xlsx",
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'contoh templet.xlsx'),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'contoh templet.xlsx')),
+        os.path.join(os.getcwd(), 'contoh templet.xlsx'),
+        r"D:\DOC\contoh templet.xlsx",
+        r"D:\DOC\contoh draf peb.xlsx"
     ])
     
     resolved_template = next((p for p in candidates if os.path.exists(p)), None)
     if not resolved_template:
-        raise FileNotFoundError(f"Templat acuan Draf PEB (contoh draf peb.xlsx) tidak ditemukan di sistem. Jalur yang dicoba: {candidates[:3]}")
+        raise FileNotFoundError(f"Templat acuan Draf PEB (contoh templet.xlsx) tidak ditemukan di sistem. Jalur yang dicoba: {candidates[:3]}")
     template_path = resolved_template
 
     # Normalisasi documents_input ke list
@@ -629,24 +631,37 @@ def generate_draf_peb_excel(
     # =========================================================================
     if "HEADER" in wb.sheetnames:
         ws_h = wb["HEADER"]
-        header_template = [ws_h.cell(row=2, column=c) for c in range(1, ws_h.max_column + 1)]
+        # Extract row 2 master template primitive values and styles before clearing
+        h_template_data = []
+        for c in range(1, ws_h.max_column + 1):
+            cell = ws_h.cell(row=2, column=c)
+            h_template_data.append({
+                "value": cell.value,
+                "font": copy.copy(cell.font) if cell.font else None,
+                "fill": copy.copy(cell.fill) if cell.fill else None,
+                "border": copy.copy(cell.border) if cell.border else None,
+                "alignment": copy.copy(cell.alignment) if cell.alignment else None,
+                "number_format": cell.number_format,
+            })
 
+        # Clear existing rows
         for r in range(2, max(ws_h.max_row + 1, 20)):
             for c in range(1, ws_h.max_column + 1):
                 ws_h.cell(row=r, column=c).value = None
 
         for d_idx, doc in enumerate(documents):
             cur_r = 2 + d_idx
-            if cur_r > 2:
-                for c in range(1, ws_h.max_column + 1):
-                    src = header_template[c - 1]
-                    tgt = ws_h.cell(row=cur_r, column=c)
-                    if src.value is not None: tgt.value = src.value
-                    if src.font: tgt.font = copy.copy(src.font)
-                    if src.fill: tgt.fill = copy.copy(src.fill)
-                    if src.border: tgt.border = copy.copy(src.border)
-                    if src.alignment: tgt.alignment = copy.copy(src.alignment)
-                    if src.number_format: tgt.number_format = src.number_format
+            # Apply master template defaults
+            for c_idx, t_item in enumerate(h_template_data):
+                col_num = c_idx + 1
+                cell = ws_h.cell(row=cur_r, column=col_num)
+                if t_item["value"] is not None:
+                    cell.value = t_item["value"]
+                if t_item["font"]: cell.font = copy.copy(t_item["font"])
+                if t_item["fill"]: cell.fill = copy.copy(t_item["fill"])
+                if t_item["border"]: cell.border = copy.copy(t_item["border"])
+                if t_item["alignment"]: cell.alignment = copy.copy(t_item["alignment"])
+                if t_item["number_format"]: cell.number_format = t_item["number_format"]
 
             no_aju = doc.get("nomor_aju", "")
             fob_val = float(doc.get("total_fob", 0.0))
@@ -657,29 +672,29 @@ def generate_draf_peb_excel(
             pelabuhan_tujuan_val = str(doc.get("pelabuhan_tujuan", "USCHS")).strip()
             etd_val = format_iso_date(doc.get("etd", "2026-08-21"))
 
-            ws_h[f"A{cur_r}"] = no_aju
-            ws_h[f"C{cur_r}"] = kode_kantor
-            ws_h[f"E{cur_r}"] = kode_kantor_periksa
-            ws_h[f"G{cur_r}"] = kode_kantor_ekspor
-            ws_h[f"AH{cur_r}"] = country_val
-            ws_h[f"AO{cur_r}"] = pelabuhan_muat
-            ws_h[f"AR{cur_r}"] = pelabuhan_tujuan_val
-            ws_h[f"AS{cur_r}"] = pelabuhan_ekspor
-            ws_h[f"AV{cur_r}"] = etd_val
-            ws_h[f"AZ{cur_r}"] = tanggal_periksa
-            ws_h[f"BQ{cur_r}"] = fob_val
-            ws_h[f"BW{cur_r}"] = ndpbm_kurs
-            ws_h[f"CB{cur_r}"] = bruto_val
-            ws_h[f"CC{cur_r}"] = netto_val
+            ws_h.cell(row=cur_r, column=1, value=no_aju)
+            ws_h.cell(row=cur_r, column=3, value=kode_kantor)
+            ws_h.cell(row=cur_r, column=5, value=kode_kantor_periksa)
+            ws_h.cell(row=cur_r, column=7, value=kode_kantor_ekspor)
+            ws_h.cell(row=cur_r, column=34, value=country_val)
+            ws_h.cell(row=cur_r, column=41, value=pelabuhan_muat)
+            ws_h.cell(row=cur_r, column=44, value=pelabuhan_tujuan_val)
+            ws_h.cell(row=cur_r, column=45, value=pelabuhan_ekspor)
+            ws_h.cell(row=cur_r, column=48, value=etd_val)
+            ws_h.cell(row=cur_r, column=52, value=tanggal_periksa)
+            ws_h.cell(row=cur_r, column=69, value=fob_val)
+            ws_h.cell(row=cur_r, column=75, value=ndpbm_kurs)
+            ws_h.cell(row=cur_r, column=80, value=bruto_val)
+            ws_h.cell(row=cur_r, column=81, value=netto_val)
             if volume_val > 0:
-                ws_h[f"CD{cur_r}"] = volume_val
-            ws_h[f"CE{cur_r}"] = kota_pernyataan
-            ws_h[f"CF{cur_r}"] = tanggal_pernyataan
-            ws_h[f"CG{cur_r}"] = nama_pernyataan
-            ws_h[f"CH{cur_r}"] = jabatan_pernyataan
-            ws_h[f"CI{cur_r}"] = "USD"
-            ws_h[f"CJ{cur_r}"] = "FOB"
-            ws_h[f"CO{cur_r}"] = kode_kantor
+                ws_h.cell(row=cur_r, column=82, value=volume_val)
+            ws_h.cell(row=cur_r, column=83, value=kota_pernyataan)
+            ws_h.cell(row=cur_r, column=84, value=tanggal_pernyataan)
+            ws_h.cell(row=cur_r, column=85, value=nama_pernyataan)
+            ws_h.cell(row=cur_r, column=86, value=jabatan_pernyataan)
+            ws_h.cell(row=cur_r, column=87, value="USD")
+            ws_h.cell(row=cur_r, column=88, value="FOB")
+            ws_h.cell(row=cur_r, column=93, value=kode_kantor)
 
     # =========================================================================
     # 2. UPDATE SHEET: ENTITAS (4 Entitas Lengkap per Dokumen Aju)
@@ -821,7 +836,17 @@ def generate_draf_peb_excel(
     # =========================================================================
     if "PENGANGKUT" in wb.sheetnames:
         ws_p = wb["PENGANGKUT"]
-        p_template = [ws_p.cell(row=2, column=c) for c in range(1, ws_p.max_column + 1)]
+        p_template_data = []
+        for c in range(1, ws_p.max_column + 1):
+            cell = ws_p.cell(row=2, column=c)
+            p_template_data.append({
+                "value": cell.value,
+                "font": copy.copy(cell.font) if cell.font else None,
+                "fill": copy.copy(cell.fill) if cell.fill else None,
+                "border": copy.copy(cell.border) if cell.border else None,
+                "alignment": copy.copy(cell.alignment) if cell.alignment else None,
+                "number_format": cell.number_format,
+            })
 
         for r in range(2, max(ws_p.max_row + 1, 20)):
             for c in range(1, ws_p.max_column + 1):
@@ -829,14 +854,15 @@ def generate_draf_peb_excel(
 
         for d_idx, doc in enumerate(documents):
             cur_r = 2 + d_idx
-            if cur_r > 2:
-                for c in range(1, ws_p.max_column + 1):
-                    src = p_template[c - 1]
-                    tgt = ws_p.cell(row=cur_r, column=c)
-                    if src.value is not None: tgt.value = src.value
-                    if src.font: tgt.font = copy.copy(src.font)
-                    if src.fill: tgt.fill = copy.copy(src.fill)
-                    if src.border: tgt.border = copy.copy(src.border)
+            for c_idx, t_item in enumerate(p_template_data):
+                col_num = c_idx + 1
+                cell = ws_p.cell(row=cur_r, column=col_num)
+                if t_item["value"] is not None:
+                    cell.value = t_item["value"]
+                if t_item["font"]: cell.font = copy.copy(t_item["font"])
+                if t_item["fill"]: cell.fill = copy.copy(t_item["fill"])
+                if t_item["border"]: cell.border = copy.copy(t_item["border"])
+                if t_item["alignment"]: cell.alignment = copy.copy(t_item["alignment"])
 
             no_aju = doc.get("nomor_aju", "")
             vessel_val = doc.get("vessel", "SINAR CARITA")
@@ -847,15 +873,27 @@ def generate_draf_peb_excel(
             ws_p.cell(row=cur_r, column=2, value=1)
             ws_p.cell(row=cur_r, column=3, value="1")
             ws_p.cell(row=cur_r, column=4, value=vessel_val)
-            ws_p.cell(row=cur_r, column=5, value=voy_val)
-            ws_p.cell(row=cur_r, column=6, value=flag_val)
+            if voy_val:
+                ws_p.cell(row=cur_r, column=5, value=voy_val)
+            if flag_val:
+                ws_p.cell(row=cur_r, column=6, value=flag_val)
 
     # =========================================================================
     # 5. UPDATE SHEET: KEMASAN (1 Baris per Aju)
     # =========================================================================
     if "KEMASAN" in wb.sheetnames:
         ws_k = wb["KEMASAN"]
-        k_template = [ws_k.cell(row=2, column=c) for c in range(1, ws_k.max_column + 1)]
+        k_template_data = []
+        for c in range(1, ws_k.max_column + 1):
+            cell = ws_k.cell(row=2, column=c)
+            k_template_data.append({
+                "value": cell.value,
+                "font": copy.copy(cell.font) if cell.font else None,
+                "fill": copy.copy(cell.fill) if cell.fill else None,
+                "border": copy.copy(cell.border) if cell.border else None,
+                "alignment": copy.copy(cell.alignment) if cell.alignment else None,
+                "number_format": cell.number_format,
+            })
 
         for r in range(2, max(ws_k.max_row + 1, 20)):
             for c in range(1, ws_k.max_column + 1):
@@ -863,14 +901,15 @@ def generate_draf_peb_excel(
 
         for d_idx, doc in enumerate(documents):
             cur_r = 2 + d_idx
-            if cur_r > 2:
-                for c in range(1, ws_k.max_column + 1):
-                    src = k_template[c - 1]
-                    tgt = ws_k.cell(row=cur_r, column=c)
-                    if src.value is not None: tgt.value = src.value
-                    if src.font: tgt.font = copy.copy(src.font)
-                    if src.fill: tgt.fill = copy.copy(src.fill)
-                    if src.border: tgt.border = copy.copy(src.border)
+            for c_idx, t_item in enumerate(k_template_data):
+                col_num = c_idx + 1
+                cell = ws_k.cell(row=cur_r, column=col_num)
+                if t_item["value"] is not None:
+                    cell.value = t_item["value"]
+                if t_item["font"]: cell.font = copy.copy(t_item["font"])
+                if t_item["fill"]: cell.fill = copy.copy(t_item["fill"])
+                if t_item["border"]: cell.border = copy.copy(t_item["border"])
+                if t_item["alignment"]: cell.alignment = copy.copy(t_item["alignment"])
 
             no_aju = doc.get("nomor_aju", "")
             qty_val = int(doc.get("total_qty", 0))
@@ -886,7 +925,17 @@ def generate_draf_peb_excel(
     # =========================================================================
     if "BARANG" in wb.sheetnames:
         ws_b = wb["BARANG"]
-        b_template = [ws_b.cell(row=2, column=c) for c in range(1, ws_b.max_column + 1)]
+        b_template_data = []
+        for c in range(1, ws_b.max_column + 1):
+            cell = ws_b.cell(row=2, column=c)
+            b_template_data.append({
+                "value": cell.value,
+                "font": copy.copy(cell.font) if cell.font else None,
+                "fill": copy.copy(cell.fill) if cell.fill else None,
+                "border": copy.copy(cell.border) if cell.border else None,
+                "alignment": copy.copy(cell.alignment) if cell.alignment else None,
+                "number_format": cell.number_format,
+            })
 
         for r in range(2, max(ws_b.max_row + 1, 50)):
             for c in range(1, ws_b.max_column + 1):
@@ -917,15 +966,16 @@ def generate_draf_peb_excel(
 
             for item_idx, it in enumerate(items):
                 target_r = cur_b_row
-                if target_r > 2:
-                    for c in range(1, ws_b.max_column + 1):
-                        src = b_template[c - 1]
-                        tgt = ws_b.cell(row=target_r, column=c)
-                        if src.font: tgt.font = copy.copy(src.font)
-                        if src.fill: tgt.fill = copy.copy(src.fill)
-                        if src.border: tgt.border = copy.copy(src.border)
-                        if src.alignment: tgt.alignment = copy.copy(src.alignment)
-                        if src.number_format: tgt.number_format = src.number_format
+                for c_idx, t_item in enumerate(b_template_data):
+                    col_num = c_idx + 1
+                    cell = ws_b.cell(row=target_r, column=col_num)
+                    if t_item["value"] is not None:
+                        cell.value = t_item["value"]
+                    if t_item["font"]: cell.font = copy.copy(t_item["font"])
+                    if t_item["fill"]: cell.fill = copy.copy(t_item["fill"])
+                    if t_item["border"]: cell.border = copy.copy(t_item["border"])
+                    if t_item["alignment"]: cell.alignment = copy.copy(t_item["alignment"])
+                    if t_item["number_format"]: cell.number_format = t_item["number_format"]
 
                 hs_clean = str(it.get("code", "94042120")).replace(".", "").replace(" ", "")
                 f_code = it.get("f_code", it.get("sku", ""))
@@ -951,23 +1001,13 @@ def generate_draf_peb_excel(
                 ws_b.cell(row=target_r, column=12, value="CT")
                 ws_b.cell(row=target_r, column=13, value=item_qt)
                 ws_b.cell(row=target_r, column=20, value=item_nw)
-                ws_b.cell(row=target_r, column=26, value=0)
-                ws_b.cell(row=target_r, column=27, value=0)
                 ws_b.cell(row=target_r, column=28, value=ndpbm_kurs)
                 ws_b.cell(row=target_r, column=29, value=item_fob)
-                ws_b.cell(row=target_r, column=32, value=0)
-                ws_b.cell(row=target_r, column=33, value=0)
-                ws_b.cell(row=target_r, column=34, value=0)
-                ws_b.cell(row=target_r, column=35, value=0)
                 ws_b.cell(row=target_r, column=36, value=item_price)
-                ws_b.cell(row=target_r, column=37, value=0)
-                ws_b.cell(row=target_r, column=39, value=0)
-                ws_b.cell(row=target_r, column=40, value=0)
                 
-                # Parameter Asal & Ekspor (Disalin untuk seluruh dokumen/item)
+                # Parameter Asal & Ekspor
                 ws_b.cell(row=target_r, column=45, value=kode_daerah_asal)
                 ws_b.cell(row=target_r, column=51, value=kode_negara_asal)
-                ws_b.cell(row=target_r, column=62, value=0)
                 ws_b.cell(row=target_r, column=67, value=kode_jenis_ekspor)
                 ws_b.cell(row=target_r, column=70, value=statement_perbedaan_harga)
 
