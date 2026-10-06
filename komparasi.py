@@ -1392,7 +1392,7 @@ def align_detail_items(peb_items: List[Dict[str, Any]], cipl_items: List[Dict[st
     return result_pairs
 
 
-def compare_data(peb_data: Dict[str, Any], cipl_data: Dict[str, Any]) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def compare_data(peb_data: Dict[str, Any], cipl_data: Dict[str, Any]) -> Tuple[Any, Any]:
     """
     Fungsi Utama Modul 3:
     Mengekstrak dan membandingkan data PEB dan CIPL menggunakan Flexible Key Mapping (Aliases) & Regex Date Slicing,
