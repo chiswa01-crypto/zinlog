@@ -27,7 +27,7 @@ except ImportError:
     openpyxl = None
 
 # Ensure root dir in sys.path to import cipl parser safely
-root_dir = r"d:/new project"
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
@@ -583,11 +583,11 @@ def generate_draf_peb_excel(
         candidates.append(template_path)
     
     candidates.extend([
+        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'contoh templet.xlsx')),
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'contoh templet.xlsx'),
+        os.path.join(os.getcwd(), 'contoh templet.xlsx'),
         r"d:\new project\contoh templet.xlsx",
         r"d:/new project/contoh templet.xlsx",
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'templates', 'contoh templet.xlsx'),
-        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'contoh templet.xlsx')),
-        os.path.join(os.getcwd(), 'contoh templet.xlsx'),
         r"D:\DOC\contoh templet.xlsx",
         r"D:\DOC\contoh draf peb.xlsx"
     ])
